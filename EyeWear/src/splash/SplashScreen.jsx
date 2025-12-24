@@ -9,39 +9,59 @@ export default function SplashScreen() {
   const { token } = useSelector((state) => state.auth);
   const [progress, setProgress] = useState(0);
   const [videoError, setVideoError] = useState(false);
+  const [shouldShowSplash, setShouldShowSplash] = useState(false);
 
   useEffect(() => {
-    // Restore user if token exists
-    if (token) {
-      dispatch(fetchUserProfile());
-    }
+    // Check if user has visited before
+    const hasVisited = sessionStorage.getItem("hasVisitedSplash");
+    
+    if (!hasVisited) {
+      // First time visitor - show splash screen
+      setShouldShowSplash(true);
+      sessionStorage.setItem("hasVisitedSplash", "true");
 
-    // Progress animation
-    const progressInterval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(progressInterval);
-          return 100;
-        }
-        return prev + 2;
-      });
-    }, 50);
+      // Restore user if token exists
+      if (token) {
+        dispatch(fetchUserProfile());
+      }
 
-    // Navigate after 3 seconds
-    const timer = setTimeout(() => {
+      // Progress animation
+      const progressInterval = setInterval(() => {
+        setProgress((prev) => {
+          if (prev >= 100) {
+            clearInterval(progressInterval);
+            return 100;
+          }
+          return prev + 2;
+        });
+      }, 50);
+
+      // Navigate after 3 seconds
+      const timer = setTimeout(() => {
+        navigate("/home");
+      }, 3000);
+
+      return () => {
+        clearTimeout(timer);
+        clearInterval(progressInterval);
+      };
+    } else {
+      // User has visited before - skip splash and go to home
+      if (token) {
+        dispatch(fetchUserProfile());
+      }
       navigate("/home");
-    }, 3000);
-
-    return () => {
-      clearTimeout(timer);
-      clearInterval(progressInterval);
-    };
+    }
   }, [token, navigate, dispatch]);
 
   const handleVideoError = () => {
     setVideoError(true);
     console.log("Video failed to load - showing fallback background");
   };
+
+  if (!shouldShowSplash) {
+    return null;
+  }
 
   return (
     <div className="fixed inset-0 w-screen h-screen overflow-hidden z-50">

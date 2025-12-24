@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
+import { useEffect } from "react";
 
 // Splash / Landing
 import SplashScreen from "./splash/SplashScreen";
@@ -32,46 +33,57 @@ import EditLinks from "./pages/Admin/EditLinks";
 
 // Protected Route
 import ProtectedRoute from "./components/ProtectedRoute";
+import PageTransition from "./components/PageTransition";
+import AuthInitializer from "./components/AuthInitializer";
 
 export default function App() {
+  useEffect(() => {
+    // Smooth scroll to top on route change
+    window.addEventListener('routechange', () => {
+      window.scrollTo(0, 0);
+    });
+  }, []);
+
   return (
-    <Routes>
-      {/* Splash / Landing */}
-      <Route path="/" element={<SplashScreen />} />
+    <AuthInitializer>
+      <Routes>
+        {/* Splash / Landing */}
+        <Route path="/" element={<SplashScreen />} />
 
       {/* Home */}
-      <Route path="/home" element={<Home />} />
+      <Route path="/home" element={<PageTransition><Home /></PageTransition>} />
 
       {/* Auth */}
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
+      <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
+      <Route path="/register" element={<PageTransition><Register /></PageTransition>} />
 
       {/* User - Protected Routes */}
-      <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
-      <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
-      <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-      <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
+      <Route path="/cart" element={<PageTransition><ProtectedRoute><Cart /></ProtectedRoute></PageTransition>} />
+      <Route path="/checkout" element={<PageTransition><ProtectedRoute><Checkout /></ProtectedRoute></PageTransition>} />
+      <Route path="/profile" element={<PageTransition><ProtectedRoute><Profile /></ProtectedRoute></PageTransition>} />
+      <Route path="/orders" element={<PageTransition><ProtectedRoute><Orders /></ProtectedRoute></PageTransition>} />
 
       {/* Categories - Protected Routes */}
-      <Route path="/deals" element={<ProtectedRoute><Deals /></ProtectedRoute>} />
-      <Route path="/eyeglasses" element={<ProtectedRoute><Eyeglasses /></ProtectedRoute>} />
-      <Route path="/computer-glasses" element={<ProtectedRoute><ComputerGlasses /></ProtectedRoute>} />
-      <Route path="/kids-glasses" element={<ProtectedRoute><KidsGlasses /></ProtectedRoute>} />
-      <Route path="/half-rim-frames" element={<ProtectedRoute><HalfRimFrames /></ProtectedRoute>} />
-      <Route path="/rimless-frames" element={<ProtectedRoute><RimlessFrames /></ProtectedRoute>} />
-      <Route path="/sunglasses" element={<ProtectedRoute><Sunglasses /></ProtectedRoute>} />
-      <Route path="/contact-lenses" element={<ProtectedRoute><ContactLenses /></ProtectedRoute>} />
+      <Route path="/deals" element={<PageTransition><ProtectedRoute><Deals /></ProtectedRoute></PageTransition>} />
+      <Route path="/eyeglasses" element={<PageTransition><ProtectedRoute><Eyeglasses /></ProtectedRoute></PageTransition>} />
+      <Route path="/computer-glasses" element={<PageTransition><ProtectedRoute><ComputerGlasses /></ProtectedRoute></PageTransition>} />
+      <Route path="/kids-glasses" element={<PageTransition><ProtectedRoute><KidsGlasses /></ProtectedRoute></PageTransition>} />
+      <Route path="/half-rim-frames" element={<PageTransition><ProtectedRoute><HalfRimFrames /></ProtectedRoute></PageTransition>} />
+      <Route path="/rimless-frames" element={<PageTransition><ProtectedRoute><RimlessFrames /></ProtectedRoute></PageTransition>} />
+      <Route path="/sunglasses" element={<PageTransition><ProtectedRoute><Sunglasses /></ProtectedRoute></PageTransition>} />
+      <Route path="/contact-lenses" element={<PageTransition><ProtectedRoute><ContactLenses /></ProtectedRoute></PageTransition>} />
 
       {/* Admin */}
-      <Route path="/admin/edit-home" element={<ProtectedRoute><EditHome /></ProtectedRoute>} />
-      <Route path="/admin/edit-links" element={<ProtectedRoute><EditLinks /></ProtectedRoute>} />
-      <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
-      <Route path="/admin/products" element={<ProtectedRoute><AdminProducts /></ProtectedRoute>} />
-      <Route path="/admin/orders" element={<ProtectedRoute><AdminOrders /></ProtectedRoute>} />
-      <Route path="/admin/users" element={<ProtectedRoute><AdminUsers /></ProtectedRoute>} />
+      <Route path="/admin/edit-home" element={<PageTransition><ProtectedRoute><EditHome /></ProtectedRoute></PageTransition>} />
+      <Route path="/admin/edit-links" element={<PageTransition><ProtectedRoute><EditLinks /></ProtectedRoute></PageTransition>} />
+      <Route path="/admin" element={<PageTransition><ProtectedRoute><AdminDashboard /></ProtectedRoute></PageTransition>} />
+      <Route path="/admin/products" element={<PageTransition><ProtectedRoute><AdminProducts /></ProtectedRoute></PageTransition>} />
+      <Route path="/admin/orders" element={<PageTransition><ProtectedRoute><AdminOrders /></ProtectedRoute></PageTransition>} />
+      <Route path="/admin/users" element={<PageTransition><ProtectedRoute><AdminUsers /></ProtectedRoute></PageTransition>} />
 
       {/* 404 - Not Found */}
       <Route path="*" element={<Navigate to="/home" replace />} />
-    </Routes>
+      </Routes>
+    </AuthInitializer>
   );
 }

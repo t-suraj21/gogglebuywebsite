@@ -1,16 +1,18 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import AdminMenuWrapper from "../components/AdminMenuWrapper";
 import ProductCard from "../components/ProductCard";
 import AuthModal from "../components/AuthModal";
 import { gogglesProducts } from "../data/products";
+import { logout } from "../redux/authSlice";
 
 import { FiArrowRight, FiShoppingCart, FiTruck, FiShield, FiStar, FiMenu, FiX, FiSearch, FiUser, FiLogOut, FiHome, FiChevronLeft, FiChevronRight } from "react-icons/fi";
 
 
 export default function Home() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -20,6 +22,7 @@ export default function Home() {
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState(null);
+  const [showSearchResults, setShowSearchResults] = useState(false);
   const cartItems = useSelector((state) => state.cart.items || []);
   const cartCount = cartItems.length;
   const user = useSelector((state) => state.auth.user);
@@ -73,18 +76,38 @@ export default function Home() {
     return () => clearInterval(timer);
   }, []);
 
+  // Update filtered products based on search query
+  useEffect(() => {
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      const results = gogglesProducts.filter((product) => 
+        product.name.toLowerCase().includes(query) || 
+        product.brand?.toLowerCase().includes(query) ||
+        product.category?.toLowerCase().includes(query)
+      );
+      setFilteredProducts(results);
+      setShowSearchResults(true);
+    } else {
+      setFilteredProducts([]);
+      setShowSearchResults(false);
+    }
+  }, [searchQuery]);
+
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      console.log("Searching for:", searchQuery);
-      setSearchQuery("");
       setIsSearchOpen(false);
+      // Keep search results visible
     }
   };
 
   const handleLogout = () => {
-    console.log("Logout");
+    dispatch(logout());
     setIsProfileDropdown(false);
+    // Refresh page to show logout changes
+    setTimeout(() => {
+      window.location.href = "/home";
+    }, 300);
   };
 
   const nextSlide = () => {
@@ -139,17 +162,46 @@ export default function Home() {
                 <Link to="/contact" className="text-gray-700 hover:text-blue-600 font-medium transition">Contact</Link>
               </div> */}
 
-              <form onSubmit={handleSearch} className="relative">
+              <form onSubmit={handleSearch} className="relative flex-1 max-w-xs">
                 <input
                   type="text"
                   placeholder="Search products..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="px-4 py-2 bg-gray-100 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition w-48"
+                  onFocus={() => setShowSearchResults(true)}
+                  className="w-full px-4 py-2 bg-gray-100 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
                 />
                 <button type="submit" className="absolute right-3 top-2.5 text-gray-500 hover:text-blue-600 transition">
                   <FiSearch size={18} />
                 </button>
+
+                {/* Search Results Dropdown */}
+                {showSearchResults && filteredProducts.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto">
+                    {filteredProducts.slice(0, 5).map((product) => (
+                      <div
+                        key={product._id}
+                        onClick={() => {
+                          window.location.href = `/product/${product._id}`;
+                          setSearchQuery("");
+                          setShowSearchResults(false);
+                        }}
+                        className="px-4 py-3 border-b hover:bg-blue-50 cursor-pointer transition flex items-center gap-3"
+                      >
+                        <img src={product.images?.[0]} alt={product.name} className="w-10 h-10 object-cover rounded" onError={(e) => e.target.src = "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=40&q=80"} />
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-gray-900 line-clamp-1">{product.name}</p>
+                          <p className="text-xs text-gray-500">{product.brand}</p>
+                        </div>
+                      </div>
+                    ))}
+                    {filteredProducts.length > 5 && (
+                      <div className="px-4 py-2 text-center text-sm text-blue-600 hover:bg-blue-50 cursor-pointer">
+                        View all {filteredProducts.length} results
+                      </div>
+                    )}
+                  </div>
+                )}
               </form>
 
               <div className="flex items-center gap-4">

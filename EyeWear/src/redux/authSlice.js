@@ -1,72 +1,22 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import api from "../services/api.js";
 
-// Dummy users database (in a real app, this would be on the server)
-const DUMMY_USERS = [
-  {
-    id: 1,
-    name: "John Doe",
-    email: "john@example.com",
-    password: "password123",
-    avatar: "👤",
-    role: "user",
-    createdAt: "2024-01-01T00:00:00.000Z"
-  },
-  {
-    id: 2,
-    name: "Jane Smith",
-    email: "jane@example.com",
-    password: "password123",
-    avatar: "👩",
-    role: "user",
-    createdAt: "2024-01-02T00:00:00.000Z"
-  },
-  {
-    id: 3,
-    name: "Admin User",
-    email: "admin@example.com",
-    password: "admin123",
-    avatar: "👨‍💼",
-    role: "admin",
-    createdAt: "2024-01-03T00:00:00.000Z"
-  }
-];
-
-// Generate a dummy JWT token
-const generateDummyToken = (userId) => {
-  return `dummy-jwt-token-${userId}-${Date.now()}`;
-};
-
-// Simulate API delay
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
-// Async thunks for dummy authentication
+// Async thunks for real backend authentication
 export const loginUser = createAsyncThunk(
   "auth/loginUser",
   async (credentials, { rejectWithValue }) => {
     try {
-      // Simulate API call delay
-      await delay(1000);
+      const response = await api.post("/auth/login", credentials);
+      const { token, user } = response.data;
 
-      const { email, password } = credentials;
-
-      // Find user in dummy database
-      const user = DUMMY_USERS.find(u => u.email === email && u.password === password);
-
-      if (!user) {
-        return rejectWithValue("Invalid email or password");
-      }
-
-      // Generate dummy token
-      const token = generateDummyToken(user.id);
-
-      // Store token
+      // Store token in localStorage
       localStorage.setItem("token", token);
 
-      // Return user data (without password)
-      const { password: _, ...userWithoutPassword } = user;
-      return userWithoutPassword;
+      return user;
     } catch (error) {
-      return rejectWithValue("Login failed. Please try again.");
+      return rejectWithValue(
+        error.response?.data?.message || "Login failed. Please try again."
+      );
     }
   }
 );
@@ -75,45 +25,17 @@ export const registerUser = createAsyncThunk(
   "auth/registerUser",
   async (userData, { rejectWithValue }) => {
     try {
-      // Simulate API call delay
-      await delay(1500);
+      const response = await api.post("/auth/register", userData);
+      const { token, user } = response.data;
 
-      const { name, email, password } = userData;
-
-      // Check if user already exists
-      const existingUser = DUMMY_USERS.find(u => u.email === email);
-      if (existingUser) {
-        return rejectWithValue("User with this email already exists");
-      }
-
-      // Validate password strength
-      if (password.length < 6) {
-        return rejectWithValue("Password must be at least 6 characters long");
-      }
-
-      // Create new user
-      const newUser = {
-        id: DUMMY_USERS.length + 1,
-        name,
-        email,
-        password, // In real app, this would be hashed
-        avatar: "👤",
-        role: "user",
-        createdAt: new Date().toISOString()
-      };
-
-      // Add to dummy database (in real app, this would be saved to server)
-      DUMMY_USERS.push(newUser);
-
-      // Generate token
-      const token = generateDummyToken(newUser.id);
+      // Store token in localStorage
       localStorage.setItem("token", token);
 
-      // Return user data (without password)
-      const { password: _, ...userWithoutPassword } = newUser;
-      return userWithoutPassword;
+      return user;
     } catch (error) {
-      return rejectWithValue("Registration failed. Please try again.");
+      return rejectWithValue(
+        error.response?.data?.message || "Registration failed. Please try again."
+      );
     }
   }
 );
@@ -122,30 +44,21 @@ export const fetchUserProfile = createAsyncThunk(
   "auth/fetchUserProfile",
   async (_, { rejectWithValue }) => {
     try {
-      // Simulate API call delay
-      await delay(500);
-
       const token = localStorage.getItem("token");
       if (!token) {
         return rejectWithValue("No token found");
       }
 
-      // Extract user ID from dummy token
-      const userId = token.split('-')[3]; // dummy-jwt-token-{userId}-{timestamp}
-
-      // Find user in dummy database
-      const user = DUMMY_USERS.find(u => u.id === parseInt(userId));
-
-      if (!user) {
-        localStorage.removeItem("token");
-        return rejectWithValue("User not found");
-      }
-
-      // Return user data (without password)
-      const { password: _, ...userWithoutPassword } = user;
-      return userWithoutPassword;
+      const response = await api.get("/auth/me");
+      return response.data;
     } catch (error) {
-      return rejectWithValue("Failed to fetch profile");
+      // Clear token if it's invalid
+      if (error.response?.status === 401) {
+        localStorage.removeItem("token");
+      }
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch profile"
+      );
     }
   }
 );
@@ -154,32 +67,12 @@ export const updateUserProfile = createAsyncThunk(
   "auth/updateUserProfile",
   async (userData, { rejectWithValue }) => {
     try {
-      // Simulate API call delay
-      await delay(800);
-
-      const token = localStorage.getItem("token");
-      if (!token) {
-        return rejectWithValue("No token found");
-      }
-
-      // Extract user ID from dummy token
-      const userId = token.split('-')[3];
-
-      // Find and update user in dummy database
-      const userIndex = DUMMY_USERS.findIndex(u => u.id === parseInt(userId));
-
-      if (userIndex === -1) {
-        return rejectWithValue("User not found");
-      }
-
-      // Update user data
-      DUMMY_USERS[userIndex] = { ...DUMMY_USERS[userIndex], ...userData };
-
-      // Return updated user data (without password)
-      const { password: _, ...userWithoutPassword } = DUMMY_USERS[userIndex];
-      return userWithoutPassword;
+      const response = await api.put("/auth/profile", userData);
+      return response.data.user;
     } catch (error) {
-      return rejectWithValue("Update failed");
+      return rejectWithValue(
+        error.response?.data?.message || "Update failed"
+      );
     }
   }
 );
@@ -188,40 +81,12 @@ export const changePassword = createAsyncThunk(
   "auth/changePassword",
   async (passwords, { rejectWithValue }) => {
     try {
-      // Simulate API call delay
-      await delay(600);
-
-      const token = localStorage.getItem("token");
-      if (!token) {
-        return rejectWithValue("No token found");
-      }
-
-      const { currentPassword, newPassword } = passwords;
-
-      // Extract user ID from dummy token
-      const userId = token.split('-')[3];
-      const user = DUMMY_USERS.find(u => u.id === parseInt(userId));
-
-      if (!user) {
-        return rejectWithValue("User not found");
-      }
-
-      // Verify current password
-      if (user.password !== currentPassword) {
-        return rejectWithValue("Current password is incorrect");
-      }
-
-      // Validate new password
-      if (newPassword.length < 6) {
-        return rejectWithValue("New password must be at least 6 characters long");
-      }
-
-      // Update password
-      user.password = newPassword;
-
-      return { message: "Password changed successfully" };
+      const response = await api.post("/auth/change-password", passwords);
+      return response.data;
     } catch (error) {
-      return rejectWithValue("Password change failed");
+      return rejectWithValue(
+        error.response?.data?.message || "Password change failed"
+      );
     }
   }
 );

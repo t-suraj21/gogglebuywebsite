@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { FiMail, FiLock, FiEye, FiEyeOff, FiArrowRight } from "react-icons/fi";
-import { loginUser, clearError } from "../redux/authSlice";
+import { FiMail, FiLock, FiEye, FiEyeOff, FiArrowRight, FiCheck } from "react-icons/fi";
+import { loginUser, clearError, clearSuccess } from "../redux/authSlice";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -12,7 +12,20 @@ export default function Login() {
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { loading, error } = useSelector((state) => state.auth);
+  const { loading, error, success, user } = useSelector((state) => state.auth);
+
+  // Handle successful login
+  useEffect(() => {
+    if (success && user) {
+      // Show success message for a moment, then redirect
+      const timer = setTimeout(() => {
+        dispatch(clearSuccess());
+        navigate("/home");
+      }, 1500);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [success, user, navigate, dispatch]);
 
   const validateForm = () => {
     if (!email || !password) {
@@ -33,13 +46,13 @@ export default function Login() {
     if (!validateForm()) return;
 
     try {
-      const result = await dispatch(loginUser({ email, password })).unwrap();
+      await dispatch(loginUser({ email, password })).unwrap();
 
       if (rememberMe) {
         localStorage.setItem("rememberEmail", email);
       }
 
-      navigate("/home");
+      // Success! Redux will trigger useEffect above to navigate
     } catch (err) {
       // Error is handled by Redux
     }
@@ -111,8 +124,19 @@ export default function Login() {
               <p className="text-gray-600">Enter your credentials to continue</p>
             </div>
 
+            {/* Success Alert */}
+            {success && user && (
+              <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-start gap-3 animate-bounce">
+                <FiCheck className="text-green-600 text-2xl mt-1 flex-shrink-0" />
+                <div>
+                  <p className="font-semibold text-green-800">Login Successful! 🎉</p>
+                  <p className="text-green-700 text-sm">Welcome back {user.name}! Redirecting...</p>
+                </div>
+              </div>
+            )}
+
             {/* Error Alert */}
-            {error && (
+            {error && !success && (
               <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
                 <span className="text-red-600 text-2xl mt-1">⚠️</span>
                 <div>
@@ -123,7 +147,7 @@ export default function Login() {
             )}
 
             {/* Form */}
-            <form onSubmit={handleLogin} className="space-y-6">
+            <form onSubmit={handleLogin} className="space-y-6" disabled={loading || success}>
               {/* Email Field */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">

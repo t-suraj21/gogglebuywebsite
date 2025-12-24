@@ -1,14 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { FiMail, FiLock, FiUser, FiPhone, FiEye, FiEyeOff, FiCheck } from "react-icons/fi";
 import { FaGoogle, FaFacebook, FaApple } from "react-icons/fa";
-import { registerUser, clearError } from "../redux/authSlice";
+import { registerUser, clearError, clearSuccess } from "../redux/authSlice";
 
 export default function Register() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { loading, error } = useSelector((state) => state.auth);
+  const { loading, error, success, user } = useSelector((state) => state.auth);
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -21,6 +21,19 @@ export default function Register() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState(0);
+
+  // Handle successful registration
+  useEffect(() => {
+    if (success && user) {
+      // Show success message for a moment, then redirect
+      const timer = setTimeout(() => {
+        dispatch(clearSuccess());
+        navigate("/home");
+      }, 1500);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [success, user, navigate, dispatch]);
 
   const validateForm = () => {
     const newErrors = {};
@@ -94,15 +107,16 @@ export default function Register() {
     }
 
     try {
-      const result = await dispatch(registerUser({
+      await dispatch(registerUser({
         name: formData.fullName,
         email: formData.email,
-        password: formData.password
+        password: formData.password,
+        confirmPassword: formData.confirmPassword
       })).unwrap();
 
-      navigate("/home");
+      // Success! Redux will trigger useEffect above to navigate
     } catch (err) {
-      // Error is handled by Redux
+      // Error is handled by Redux and displayed
     }
   };
 
@@ -167,13 +181,27 @@ export default function Register() {
               <p className="text-gray-600 mt-2">Join our community and start shopping</p>
             </div>
 
-            {(error || errors.submit) && (
-              <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-600 rounded-lg">
-                <p className="text-red-700 font-semibold">{error || errors.submit}</p>
+            {/* Success Message */}
+            {success && user && (
+              <div className="mb-6 p-4 bg-green-50 border-l-4 border-green-600 rounded-lg animate-bounce">
+                <div className="flex items-center gap-3">
+                  <FiCheck className="text-green-600 flex-shrink-0" size={24} />
+                  <div>
+                    <p className="text-green-700 font-semibold">Registration Successful! 🎉</p>
+                    <p className="text-green-600 text-sm">Welcome {user.name}! Redirecting to home...</p>
+                  </div>
+                </div>
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Error Message */}
+            {error && (
+              <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-600 rounded-lg">
+                <p className="text-red-700 font-semibold">{error}</p>
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-5" disabled={loading || success}>
               {/* Full Name */}
               <div>
                 <label className="block text-sm font-semibold text-gray-800 mb-2">Full Name</label>

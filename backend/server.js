@@ -18,6 +18,11 @@ const __dirname = path.dirname(__filename);
 // Load environment variables
 dotenv.config();
 
+console.log("🔧 Configuration:");
+console.log("   JWT_SECRET:", process.env.JWT_SECRET ? "✅ Set" : "❌ Not set");
+console.log("   MongoDB URI:", process.env.MONGODB_URI || "mongodb://localhost:27017/eyewear");
+console.log("   NODE_ENV:", process.env.NODE_ENV || "development");
+
 const app = express();
 const PORT = process.env.PORT || 8001;
 
@@ -33,7 +38,12 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));
 
 // Connect to database
-connectDB();
+console.log("🔌 Connecting to MongoDB...");
+connectDB().then(() => {
+  console.log("✅ MongoDB connection successful");
+}).catch((err) => {
+  console.error("❌ MongoDB connection failed:", err.message);
+});
 
 // Health check route
 app.get("/api/health", (req, res) => {
@@ -62,6 +72,9 @@ app.use((err, req, res, next) => {
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-  console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
+  console.log("\n🚀 ════════════════════════════════════════════════════════");
+  console.log(`   Server running at: http://localhost:${PORT}`);
+  console.log(`   API Base URL: http://localhost:${PORT}/api`);
+  console.log(`   Environment: ${process.env.NODE_ENV || "development"}`);
+  console.log("════════════════════════════════════════════════════════\n");
 });

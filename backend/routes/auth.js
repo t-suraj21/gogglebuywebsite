@@ -24,37 +24,46 @@ router.post("/register", async (req, res) => {
   try {
     const { name, email, password, confirmPassword } = req.body;
 
+    console.log("📝 Register request received:", { name, email, password: "***", confirmPassword: "***" });
+
     // Validation
     if (!name || !email || !password || !confirmPassword) {
+      console.error("❌ Missing required fields");
       return res.status(400).json({ message: "All fields are required" });
     }
 
     // Validate name
-    if (name.trim().length < 2) {
+    if (typeof name !== "string" || name.trim().length < 2) {
+      console.error("❌ Invalid name:", name);
       return res.status(400).json({ message: "Name must be at least 2 characters" });
     }
 
-    // Validate email format
-    const emailRegex = /^[\w.-]+@[\w.-]+\.\w+$/;
+    // Validate email format - more lenient
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
+      console.error("❌ Invalid email:", email);
       return res.status(400).json({ message: "Please enter a valid email address" });
     }
 
     if (password !== confirmPassword) {
+      console.error("❌ Passwords do not match");
       return res.status(400).json({ message: "Passwords do not match" });
     }
 
     if (password.length < 6) {
+      console.error("❌ Password too short");
       return res.status(400).json({ message: "Password must be at least 6 characters" });
     }
 
     if (password.length > 128) {
+      console.error("❌ Password too long");
       return res.status(400).json({ message: "Password is too long" });
     }
 
     // Check if user already exists
     const existingUser = await User.findOne({ email: email.toLowerCase() });
     if (existingUser) {
+      console.error("❌ User already exists:", email);
       return res.status(400).json({ message: "Email already registered" });
     }
 
@@ -66,7 +75,9 @@ router.post("/register", async (req, res) => {
       role: "user"
     });
 
+    console.log("💾 Saving user to MongoDB...");
     await user.save();
+    console.log("✅ User saved successfully:", user._id);
 
     const token = generateToken(user);
 
@@ -76,7 +87,8 @@ router.post("/register", async (req, res) => {
       user: user.toJSON()
     });
   } catch (error) {
-    console.error("Register error:", error);
+    console.error("❌ Register error:", error.message);
+    console.error("Error stack:", error.stack);
     res.status(500).json({ message: "Error registering user", error: error.message });
   }
 });
@@ -144,6 +156,50 @@ router.put("/profile", auth, async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: "Error updating profile", error: error.message });
+  }
+});
+
+// Change password
+router.post("/change-password", auth, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    // Validation
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ message: "Current and new passwords are required" });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ message: "New password must be at least 6 characters" });
+    }
+
+    if (currentPassword === newPassword) {
+      return res.status(400).json({ message: "New password must be different from current password" });
+    }
+
+    // Get user with password field
+    const user = await User.findById(req.user._id).select("+password");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Verify current password
+    const isPasswordValid = await user.comparePassword(currentPassword);
+    if (!isPasswordValid) {
+      return res.status(401).json({ message: "Current password is incorrect" });
+    }
+
+    // Update password
+    user.password = newPassword;
+    await user.save();
+
+    res.json({
+      message: "Password changed successfully"
+    });
+  } catch (error) {
+    console.error("Change password error:", error);
+    res.status(500).json({ message: "Error changing password", error: error.message });
   }
 });
 

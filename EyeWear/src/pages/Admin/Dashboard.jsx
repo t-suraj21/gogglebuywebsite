@@ -1,106 +1,57 @@
 import { useEffect, useState } from "react";
 import { FiUsers, FiPackage, FiShoppingBag, FiDollarSign, FiActivity, FiTrendingUp } from "react-icons/fi";
 import { MdPending, MdDownloadDone } from "react-icons/md";
+import api from "../../services/api";
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
     totalUsers: 0,
-    totalProducts: 75,
+    totalProducts: 0,
     totalOrders: 0,
     totalRevenue: 0,
-    registeredUsers: 0,
-    activeUsers: 0,
-    totalLogins: 0,
     pendingOrders: 0,
     processingOrders: 0,
     shippedOrders: 0,
-    deliveredOrders: 0,
-    newUsersThisMonth: 0,
-    averageOrderValue: 0
+    deliveredOrders: 0
   });
+  const [recentOrders, setRecentOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchDashboardData = async () => {
+    try {
+      const [dashboardRes, ordersRes] = await Promise.all([
+        api.get("/admin/dashboard"),
+        api.get("/admin/orders")
+      ]);
+
+      const { stats: dashboardStats } = dashboardRes.data;
+      const allOrders = ordersRes.data;
+
+      // Calculate order status breakdown
+      const orderStats = {
+        pendingOrders: allOrders.filter(order => order.status === 'pending').length,
+        processingOrders: allOrders.filter(order => order.status === 'processing').length,
+        shippedOrders: allOrders.filter(order => order.status === 'shipped').length,
+        deliveredOrders: allOrders.filter(order => order.status === 'delivered').length
+      };
+
+      setStats({
+        ...dashboardStats,
+        ...orderStats
+      });
+
+      // Get recent 5 orders
+      setRecentOrders(allOrders.slice(0, 5));
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchStats = () => {
-      try {
-        // Get registered users from localStorage
-        const registeredUsersArray = JSON.parse(localStorage.getItem("registeredUsers") || "[]");
-        const totalUsers = registeredUsersArray.length;
-        
-        // Count new users this month
-        const currentMonth = new Date().getMonth();
-        const currentYear = new Date().getFullYear();
-        const newUsersThisMonth = registeredUsersArray.filter(user => {
-          const userDate = new Date(user.createdAt);
-          return userDate.getMonth() === currentMonth && userDate.getFullYear() === currentYear;
-        }).length;
-        
-        // Get login stats from localStorage
-        const loginStats = JSON.parse(localStorage.getItem("loginStats") || "{}");
-        const totalLogins = Object.values(loginStats).reduce((sum, count) => sum + (typeof count === 'number' ? count : 0), 0);
-        
-        // Get active users (count unique users from loginStats - users who have logged in)
-        const activeUsers = Object.keys(loginStats).length;
-        
-        // Get orders from localStorage
-        const orders = JSON.parse(localStorage.getItem("orders") || "[]");
-        const totalOrders = orders.length;
-        
-        // Calculate revenue and order breakdown
-        let totalRevenue = 0;
-        let pendingOrders = 0;
-        let processingOrders = 0;
-        let shippedOrders = 0;
-        let deliveredOrders = 0;
-        
-        orders.forEach(order => {
-          totalRevenue += order.total || 0;
-          
-          switch(order.status) {
-            case 'pending':
-              pendingOrders++;
-              break;
-            case 'processing':
-              processingOrders++;
-              break;
-            case 'shipped':
-              shippedOrders++;
-              break;
-            case 'delivered':
-              deliveredOrders++;
-              break;
-            default:
-              break;
-          }
-        });
-        
-        const averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
-        
-        // Get added products count
-        const addedProducts = JSON.parse(localStorage.getItem("addedProducts") || "[]");
-        const totalProducts = 75 + addedProducts.length;
-        
-        setStats({
-          totalUsers,
-          totalProducts,
-          totalOrders,
-          totalRevenue,
-          registeredUsers: totalUsers,
-          activeUsers,
-          totalLogins,
-          pendingOrders,
-          processingOrders,
-          shippedOrders,
-          deliveredOrders,
-          newUsersThisMonth,
-          averageOrderValue
-        });
-      } catch (error) {
-        console.error("Error fetching stats:", error);
-      }
-    };
-
-    fetchStats();
-    const interval = setInterval(fetchStats, 5000);
+    fetchDashboardData();
+    const interval = setInterval(fetchDashboardData, 5000);
     return () => clearInterval(interval);
   }, []);
 
@@ -145,7 +96,7 @@ export default function AdminDashboard() {
               <div>
                 <h2 className="text-sm font-semibold opacity-90">Total Products</h2>
                 <p className="text-3xl font-bold mt-2">{stats.totalProducts}</p>
-                <p className="text-xs opacity-75 mt-1">75 default + added</p>
+                <p className="text-xs opacity-75 mt-1">In inventory</p>
               </div>
               <FiPackage size={40} className="opacity-50" />
             </div>
@@ -172,7 +123,7 @@ export default function AdminDashboard() {
               <div>
                 <h2 className="text-sm font-semibold opacity-90">Total Revenue</h2>
                 <p className="text-3xl font-bold mt-2">₹{stats.totalRevenue.toFixed(2)}</p>
-                <p className="text-xs opacity-75 mt-1">Avg: ₹{stats.averageOrderValue.toFixed(2)}/order</p>
+                <p className="text-xs opacity-75 mt-1">From delivered orders</p>
               </div>
               <FiDollarSign size={40} className="opacity-50" />
             </div>
@@ -246,11 +197,11 @@ export default function AdminDashboard() {
             {/* Revenue Summary */}
             <div className="bg-green-50 border-l-4 border-green-400 p-4 rounded">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-semibold text-gray-700">Avg Order Value</h3>
+                <h3 className="text-sm font-semibold text-gray-700">Revenue</h3>
                 <FiDollarSign size={20} className="text-green-500" />
               </div>
-              <p className="text-2xl font-bold text-gray-900">₹{stats.averageOrderValue.toFixed(0)}</p>
-              <p className="text-xs text-gray-600 mt-1">Per order</p>
+              <p className="text-2xl font-bold text-gray-900">₹{stats.totalRevenue.toFixed(0)}</p>
+              <p className="text-xs text-gray-600 mt-1">Total earnings</p>
             </div>
           </div>
         </div>
@@ -266,8 +217,8 @@ export default function AdminDashboard() {
                 </div>
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Registered Users</p>
-                <p className="text-lg font-semibold text-gray-900">{stats.registeredUsers}</p>
+                <p className="text-sm font-medium text-gray-600">Total Users</p>
+                <p className="text-lg font-semibold text-gray-900">{stats.totalUsers}</p>
               </div>
             </div>
 
@@ -278,7 +229,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Completed Orders</p>
+                <p className="text-sm font-medium text-gray-600">Delivered Orders</p>
                 <p className="text-lg font-semibold text-gray-900">{stats.deliveredOrders}</p>
               </div>
             </div>
@@ -296,6 +247,48 @@ export default function AdminDashboard() {
             </div>
           </div>
         </div>
+
+        {/* Recent Orders Preview */}
+        {recentOrders.length > 0 && (
+          <div className="bg-white rounded-2xl shadow-lg p-8 mt-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Recent Orders</h2>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 border-b-2 border-gray-200">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Order ID</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Customer</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Amount</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Status</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recentOrders.map((order, index) => (
+                    <tr key={index} className="border-b hover:bg-gray-50">
+                      <td className="px-6 py-4 text-sm text-gray-900">#{order._id?.slice(-8) || order.id}</td>
+                      <td className="px-6 py-4 text-sm text-gray-700">{order.userId?.name || order.userName || 'N/A'}</td>
+                      <td className="px-6 py-4 text-sm font-semibold text-gray-900">₹{order.total?.toFixed(2) || '0.00'}</td>
+                      <td className="px-6 py-4 text-sm">
+                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          order.status === 'delivered' ? 'bg-green-100 text-green-800' :
+                          order.status === 'shipped' ? 'bg-blue-100 text-blue-800' :
+                          order.status === 'processing' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {order.status?.charAt(0).toUpperCase() + order.status?.slice(1) || 'Pending'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-600">
+                        {new Date(order.createdAt).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

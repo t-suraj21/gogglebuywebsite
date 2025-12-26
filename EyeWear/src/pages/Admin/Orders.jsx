@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { FiSearch, FiEye, FiCheckCircle, FiTruck, FiX, FiFilter } from "react-icons/fi";
 import { MdPending, MdDownloadDone } from "react-icons/md";
+import api from "../../services/api";
 
 export default function AdminOrders() {
   const [orders, setOrders] = useState([]);
@@ -16,36 +17,38 @@ export default function AdminOrders() {
     return () => clearInterval(interval);
   }, []);
 
-  const fetchOrders = () => {
+  const fetchOrders = async () => {
     try {
-      const storedOrders = JSON.parse(localStorage.getItem("orders")) || [];
-      setOrders(storedOrders);
-      setLoading(false);
+      setLoading(true);
+      const response = await api.get("/admin/orders");
+      setOrders(response.data);
     } catch (error) {
       console.error("Error fetching orders:", error);
+      // Fallback to localStorage
+      const storedOrders = JSON.parse(localStorage.getItem("orders")) || [];
+      setOrders(storedOrders);
+    } finally {
       setLoading(false);
     }
   };
 
-  const updateOrderStatus = (orderId, status) => {
+  const updateOrderStatus = async (orderId, status) => {
     try {
-      const storedOrders = JSON.parse(localStorage.getItem("orders")) || [];
-      const updatedOrders = storedOrders.map(order =>
-        order.id === orderId
-          ? { ...order, status, updatedAt: new Date().toISOString() }
-          : order
-      );
-      localStorage.setItem("orders", JSON.stringify(updatedOrders));
-      setOrders(updatedOrders);
+      await api.put(`/admin/orders/${orderId}/status`, { status });
+      fetchOrders();
+      alert("Order status updated successfully");
     } catch (error) {
       console.error("Error updating order:", error);
+      alert("Failed to update order status");
     }
   };
 
   const filteredOrders = orders.filter((order) => {
     const matchesSearch =
-      String(order.id).toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.userName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      String(order._id || order.id).toLowerCase().includes(searchQuery.toLowerCase()) ||
+      order.userId?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      order.shippingAddress?.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      order.userId?.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       order.userEmail?.toLowerCase().includes(searchQuery.toLowerCase());
     
     const matchesStatus = statusFilter === "all" || order.status === statusFilter;
@@ -175,21 +178,25 @@ export default function AdminOrders() {
                 </thead>
                 <tbody className="divide-y">
                   {filteredOrders.map((order) => (
-                    <tr key={order.id} className="hover:bg-gray-50 transition">
+                    <tr key={order._id || order.id} className="hover:bg-gray-50 transition">
                       <td className="px-6 py-4">
                         <span className="font-mono text-sm text-blue-600 font-semibold">
-                          {String(order.id).slice(-8).toUpperCase()}
+                          {String(order._id || order.id).slice(-8).toUpperCase()}
                         </span>
                       </td>
                       <td className="px-6 py-4">
                         <div>
-                          <p className="font-medium text-gray-900">{order.userName}</p>
-                          <p className="text-sm text-gray-600">{order.userEmail}</p>
+                          <p className="font-medium text-gray-900">
+                            {order.userId?.name || order.shippingAddress?.fullName || order.userName}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            {order.userId?.email || order.userEmail}
+                          </p>
                         </div>
                       </td>
                       <td className="px-6 py-4">
                         <p className="font-semibold text-gray-900">
-                          ₹{order.total?.toFixed(2)}
+                          ₹{order.total?.toFixed(2) || '0.00'}
                         </p>
                       </td>
                       <td className="px-6 py-4">
@@ -201,7 +208,7 @@ export default function AdminOrders() {
                         </div>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-600">
-                        {new Date(order.createdAt).toLocaleDateString()}
+                        {new Date(order.createdAt || order.orderDate).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
@@ -217,7 +224,7 @@ export default function AdminOrders() {
                           </button>
                           <select
                             value={order.status}
-                            onChange={(e) => updateOrderStatus(order.id, e.target.value)}
+                            onChange={(e) => updateOrderStatus(order._id || order.id, e.target.value)}
                             className="px-3 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                           >
                             <option value="pending">Pending</option>
@@ -260,11 +267,11 @@ export default function AdminOrders() {
                 <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded">
                   <div>
                     <p className="text-sm text-gray-600">Order ID</p>
-                    <p className="font-mono font-semibold">{selectedOrder.id}</p>
+                    <p className="font-mono font-semibold">{selectedOrder._id || selectedOrder.id}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Date</p>
-                    <p className="font-semibold">{new Date(selectedOrder.createdAt).toLocaleDateString()}</p>
+                    <p className="font-semibold">{new Date(selectedOrder.createdAt || selectedOrder.orderDate).toLocaleDateString()}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Status</p>
@@ -272,7 +279,7 @@ export default function AdminOrders() {
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Total</p>
-                    <p className="font-semibold text-green-600">₹{selectedOrder.total?.toFixed(2)}</p>
+                    <p className="font-semibold text-green-600">₹{selectedOrder.total?.toFixed(2) || '0.00'}</p>
                   </div>
                 </div>
               </div>
@@ -281,9 +288,9 @@ export default function AdminOrders() {
               <div>
                 <h3 className="font-semibold text-gray-900 mb-3">Customer Information</h3>
                 <div className="bg-gray-50 p-4 rounded space-y-2">
-                  <p><span className="text-gray-600">Name:</span> <span className="font-semibold">{selectedOrder.userName}</span></p>
-                  <p><span className="text-gray-600">Email:</span> <span className="font-semibold">{selectedOrder.userEmail}</span></p>
-                  <p><span className="text-gray-600">Phone:</span> <span className="font-semibold">{selectedOrder.userPhone || "N/A"}</span></p>
+                  <p><span className="text-gray-600">Name:</span> <span className="font-semibold">{selectedOrder.userId?.name || selectedOrder.shippingAddress?.fullName || selectedOrder.userName}</span></p>
+                  <p><span className="text-gray-600">Email:</span> <span className="font-semibold">{selectedOrder.userId?.email || selectedOrder.userEmail}</span></p>
+                  <p><span className="text-gray-600">Phone:</span> <span className="font-semibold">{selectedOrder.shippingAddress?.phone || selectedOrder.userPhone || "N/A"}</span></p>
                 </div>
               </div>
 
@@ -309,19 +316,19 @@ export default function AdminOrders() {
                 <div className="bg-gray-50 p-4 rounded space-y-2">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Subtotal:</span>
-                    <span className="font-semibold">₹{selectedOrder.subtotal?.toFixed(2)}</span>
+                    <span className="font-semibold">₹{selectedOrder.subtotal?.toFixed(2) || '0.00'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Tax (10%):</span>
-                    <span className="font-semibold">₹{selectedOrder.tax?.toFixed(2)}</span>
+                    <span className="font-semibold">₹{selectedOrder.tax?.toFixed(2) || '0.00'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Shipping:</span>
-                    <span className="font-semibold">₹{selectedOrder.shipping?.toFixed(2)}</span>
+                    <span className="font-semibold">₹{selectedOrder.shipping?.toFixed(2) || '0.00'}</span>
                   </div>
                   <div className="border-t pt-2 flex justify-between">
                     <span className="font-semibold">Total:</span>
-                    <span className="font-bold text-lg text-green-600">₹{selectedOrder.total?.toFixed(2)}</span>
+                    <span className="font-bold text-lg text-green-600">₹{selectedOrder.total?.toFixed(2) || '0.00'}</span>
                   </div>
                 </div>
               </div>
@@ -330,11 +337,11 @@ export default function AdminOrders() {
               <div>
                 <h3 className="font-semibold text-gray-900 mb-3">Shipping Address</h3>
                 <div className="bg-gray-50 p-4 rounded space-y-1">
-                  <p className="text-gray-700 font-medium">{selectedOrder.addressDetails?.fullName}</p>
-                  <p className="text-gray-700">{selectedOrder.addressDetails?.address}</p>
-                  <p className="text-gray-700">{selectedOrder.addressDetails?.city}, {selectedOrder.addressDetails?.state} {selectedOrder.addressDetails?.postalCode}</p>
-                  <p className="text-gray-700">{selectedOrder.addressDetails?.country}</p>
-                  <p className="text-gray-700 pt-2">Phone: {selectedOrder.userPhone}</p>
+                  <p className="text-gray-700 font-medium">{selectedOrder.shippingAddress?.fullName || selectedOrder.addressDetails?.fullName}</p>
+                  <p className="text-gray-700">{selectedOrder.shippingAddress?.street || selectedOrder.addressDetails?.address}</p>
+                  <p className="text-gray-700">{selectedOrder.shippingAddress?.city || selectedOrder.addressDetails?.city}, {selectedOrder.shippingAddress?.state || selectedOrder.addressDetails?.state} {selectedOrder.shippingAddress?.zipCode || selectedOrder.addressDetails?.postalCode}</p>
+                  <p className="text-gray-700">{selectedOrder.shippingAddress?.country || selectedOrder.addressDetails?.country}</p>
+                  <p className="text-gray-700 pt-2">Phone: {selectedOrder.shippingAddress?.phone || selectedOrder.userPhone}</p>
                 </div>
               </div>
             </div>

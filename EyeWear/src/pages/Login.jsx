@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { FiMail, FiLock, FiEye, FiEyeOff, FiArrowRight, FiCheck } from "react-icons/fi";
+import { FiMail, FiLock, FiEye, FiEyeOff, FiArrowRight, FiCheck, FiShield } from "react-icons/fi";
 import { loginUser, clearError, clearSuccess } from "../redux/authSlice";
 
 export default function Login() {
@@ -10,6 +10,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [localSuccess, setLocalSuccess] = useState(false);
+  const [isAdminLogin, setIsAdminLogin] = useState(false);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -33,12 +34,18 @@ export default function Login() {
       const timer = setTimeout(() => {
         dispatch(clearSuccess());
         setLocalSuccess(false);
-        navigate("/home");
+        
+        // Redirect based on login type
+        if (isAdminLogin && user.role === "admin") {
+          navigate("/admin/dashboard");
+        } else {
+          navigate("/home");
+        }
       }, 1500);
       
       return () => clearTimeout(timer);
     }
-  }, [success, user, navigate, dispatch]);
+  }, [success, user, navigate, dispatch, isAdminLogin]);
 
   // Clear errors when component unmounts or when user starts typing
   useEffect(() => {
@@ -73,6 +80,14 @@ export default function Login() {
       const result = await dispatch(loginUser({ email: email.toLowerCase(), password })).unwrap();
 
       if (result) {
+        // Check if admin login and user is not admin
+        if (isAdminLogin && result.role !== "admin") {
+          dispatch(clearSuccess());
+          setLocalSuccess(false);
+          alert("❌ Admin access required. This account is not an admin account.");
+          return;
+        }
+
         if (rememberMe) {
           localStorage.setItem("rememberEmail", email);
         } else {
@@ -145,10 +160,44 @@ export default function Login() {
         {/* Right Section - Login Form */}
         <div className="w-full">
           <div className="bg-white rounded-2xl shadow-2xl p-8 sm:p-10">
-            {/* Header */}
+            {/* Header with Toggle */}
             <div className="mb-8">
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">Sign In</h2>
-              <p className="text-gray-600">Enter your credentials to continue</p>
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                    {isAdminLogin ? "Admin Sign In" : "Sign In"}
+                  </h2>
+                  <p className="text-gray-600">
+                    {isAdminLogin ? "Enter admin credentials" : "Enter your credentials to continue"}
+                  </p>
+                </div>
+              </div>
+
+              {/* User / Admin Toggle */}
+              <div className="flex gap-2 bg-gray-100 p-1 rounded-lg mb-6">
+                <button
+                  type="button"
+                  onClick={() => setIsAdminLogin(false)}
+                  className={`flex-1 py-2 px-4 rounded-md font-semibold transition-all flex items-center justify-center gap-2 ${
+                    !isAdminLogin
+                      ? "bg-blue-600 text-white shadow-md"
+                      : "bg-transparent text-gray-700 hover:bg-gray-200"
+                  }`}
+                >
+                  👤 User Login
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsAdminLogin(true)}
+                  className={`flex-1 py-2 px-4 rounded-md font-semibold transition-all flex items-center justify-center gap-2 ${
+                    isAdminLogin
+                      ? "bg-red-600 text-white shadow-md"
+                      : "bg-transparent text-gray-700 hover:bg-gray-200"
+                  }`}
+                >
+                  <FiShield size={18} /> Admin Login
+                </button>
+              </div>
             </div>
 
             {/* Success Alert */}
@@ -157,7 +206,11 @@ export default function Login() {
                 <FiCheck className="text-green-600 text-2xl mt-1 flex-shrink-0" />
                 <div>
                   <p className="font-semibold text-green-800">Login Successful! 🎉</p>
-                  <p className="text-green-700 text-sm">Welcome back {user.name}! Redirecting...</p>
+                  <p className="text-green-700 text-sm">
+                    {isAdminLogin
+                      ? `Welcome back Admin ${user.name}! Redirecting to dashboard...`
+                      : `Welcome back ${user.name}! Redirecting...`}
+                  </p>
                 </div>
               </div>
             )}
@@ -245,17 +298,30 @@ export default function Login() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold py-3 rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className={`w-full text-white font-bold py-3 rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 ${
+                  isAdminLogin
+                    ? "bg-gradient-to-r from-red-600 to-red-700"
+                    : "bg-gradient-to-r from-blue-600 to-blue-700"
+                }`}
               >
                 {loading ? (
                   <>
                     <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full"></div>
-                    Signing in...
+                    {isAdminLogin ? "Signing in as Admin..." : "Signing in..."}
                   </>
                 ) : (
                   <>
-                    Sign In
-                    <FiArrowRight size={20} />
+                    {isAdminLogin ? (
+                      <>
+                        <FiShield size={20} />
+                        Admin Sign In
+                      </>
+                    ) : (
+                      <>
+                        Sign In
+                        <FiArrowRight size={20} />
+                      </>
+                    )}
                   </>
                 )}
               </button>
@@ -270,36 +336,45 @@ export default function Login() {
                 </div>
               </div>
 
-              {/* Social Login */}
-              <div className="grid grid-cols-2 gap-4">
-                <button
-                  type="button"
-                  className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-gray-200 rounded-lg hover:bg-gray-50 transition font-medium text-gray-700"
-                >
-                  <span className="text-xl">📧</span>
-                  Google
-                </button>
-                <button
-                  type="button"
-                  className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-gray-200 rounded-lg hover:bg-gray-50 transition font-medium text-gray-700"
-                >
-                  <span className="text-xl">f</span>
-                  Facebook
-                </button>
-              </div>
+              {/* Social Login - Hide for Admin */}
+              {!isAdminLogin && (
+                <div className="grid grid-cols-2 gap-4">
+                  <button
+                    type="button"
+                    className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-gray-200 rounded-lg hover:bg-gray-50 transition font-medium text-gray-700"
+                  >
+                    <span className="text-xl">📧</span>
+                    Google
+                  </button>
+                  <button
+                    type="button"
+                    className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-gray-200 rounded-lg hover:bg-gray-50 transition font-medium text-gray-700"
+                  >
+                    <span className="text-xl">f</span>
+                    Facebook
+                  </button>
+                </div>
+              )}
             </form>
 
             {/* Sign Up Link */}
             <div className="mt-8 p-4 bg-gray-50 rounded-lg text-center">
-              <p className="text-gray-700">
-                Don't have an account?{" "}
-                <Link
-                  to="/register"
-                  className="text-blue-600 hover:text-blue-700 font-bold transition"
-                >
-                  Sign Up
-                </Link>
-              </p>
+              {isAdminLogin ? (
+                <p className="text-gray-700">
+                  <FiShield className="inline mr-2" size={18} />
+                  Admin Panel Access Only
+                </p>
+              ) : (
+                <p className="text-gray-700">
+                  Don't have an account?{" "}
+                  <Link
+                    to="/register"
+                    className="text-blue-600 hover:text-blue-700 font-bold transition"
+                  >
+                    Sign Up
+                  </Link>
+                </p>
+              )}
             </div>
 
             {/* Security Badge */}

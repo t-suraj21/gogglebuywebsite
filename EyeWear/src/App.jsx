@@ -86,7 +86,7 @@ export default function App() {
       {/* Admin */}
       <Route path="/admin/edit-home" element={<PageTransition><ProtectedRoute><EditHome /></ProtectedRoute></PageTransition>} />
       <Route path="/admin/edit-links" element={<PageTransition><ProtectedRoute><EditLinks /></ProtectedRoute></PageTransition>} />
-      <Route path="/admin" element={<PageTransition><ProtectedRoute><AdminDashboard /></ProtectedRoute></PageTransition>} />
+      <Route path="/admin/dashboard" element={<PageTransition><ProtectedRoute><AdminDashboard /></ProtectedRoute></PageTransition>} />
       <Route path="/admin/products" element={<PageTransition><ProtectedRoute><AdminProducts /></ProtectedRoute></PageTransition>} />
       <Route path="/admin/orders" element={<PageTransition><ProtectedRoute><AdminOrders /></ProtectedRoute></PageTransition>} />
       <Route path="/admin/users" element={<PageTransition><ProtectedRoute><AdminUsers /></ProtectedRoute></PageTransition>} />

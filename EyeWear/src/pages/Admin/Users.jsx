@@ -1,39 +1,56 @@
 import { useEffect, useState } from "react";
 import { FiTrash2, FiUserCheck, FiUserPlus } from "react-icons/fi";
+import api from "../../services/api";
 
 export default function AdminUsers() {
   const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
-    registered: 0,
-    active: 0
+    totalUsers: 0,
+    activeUsers: 0,
+    adminUsers: 0
   });
 
-  const fetchUsers = () => {
-    const storedUsers = JSON.parse(localStorage.getItem("registeredUsers") || "[]");
-    setUsers(storedUsers);
-    
-    // Calculate active users (users who logged in today)
-    const today = new Date().toISOString().split('T')[0];
-    const activeUsersData = JSON.parse(localStorage.getItem("activeUsersToday") || "{}");
-    const activeCount = Object.keys(activeUsersData).length;
-    
-    setStats({
-      registered: storedUsers.length,
-      active: activeCount
-    });
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get("/admin/users");
+      setUsers(response.data.users);
+      setStats(response.data.stats);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      // Fallback to localStorage
+      const storedUsers = JSON.parse(localStorage.getItem("registeredUsers") || "[]");
+      setUsers(storedUsers);
+      setStats({
+        totalUsers: storedUsers.length,
+        activeUsers: storedUsers.filter(u => u.isActive).length,
+        adminUsers: storedUsers.filter(u => u.role === "admin").length
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
     fetchUsers();
-    const interval = setInterval(fetchUsers, 5000);
+    const interval = setInterval(fetchUsers, 10000);
     return () => clearInterval(interval);
   }, []);
 
-  const deleteUser = (id) => {
-    const storedUsers = JSON.parse(localStorage.getItem("registeredUsers") || "[]");
-    const filtered = storedUsers.filter(u => u.id !== id);
-    localStorage.setItem("registeredUsers", JSON.stringify(filtered));
-    fetchUsers();
+  const deleteUser = async (userId) => {
+    if (!window.confirm("Are you sure you want to delete this user?")) {
+      return;
+    }
+
+    try {
+      await api.delete(`/admin/users/${userId}`);
+      alert("User deleted successfully");
+      fetchUsers();
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      alert("Failed to delete user");
+    }
   };
 
   return (
@@ -42,12 +59,12 @@ export default function AdminUsers() {
         <h1 className="text-3xl font-bold mb-8 text-gray-900">User Management</h1>
 
         {/* USER STATS */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
           <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-2xl shadow-lg">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-sm font-semibold opacity-90">Registered Users</h2>
-                <p className="text-3xl font-bold mt-2">{stats.registered}</p>
+                <h2 className="text-sm font-semibold opacity-90">Total Users</h2>
+                <p className="text-3xl font-bold mt-2">{stats.totalUsers}</p>
               </div>
               <FiUserPlus size={40} className="opacity-50" />
             </div>
@@ -55,8 +72,17 @@ export default function AdminUsers() {
           <div className="bg-gradient-to-br from-green-500 to-green-600 text-white p-6 rounded-2xl shadow-lg">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-sm font-semibold opacity-90">Active Users Today</h2>
-                <p className="text-3xl font-bold mt-2">{stats.active}</p>
+                <h2 className="text-sm font-semibold opacity-90">Active Users</h2>
+                <p className="text-3xl font-bold mt-2">{stats.activeUsers}</p>
+              </div>
+              <FiUserCheck size={40} className="opacity-50" />
+            </div>
+          </div>
+          <div className="bg-gradient-to-br from-red-500 to-red-600 text-white p-6 rounded-2xl shadow-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-sm font-semibold opacity-90">Admin Users</h2>
+                <p className="text-3xl font-bold mt-2">{stats.adminUsers}</p>
               </div>
               <FiUserCheck size={40} className="opacity-50" />
             </div>
@@ -79,7 +105,7 @@ export default function AdminUsers() {
               <tbody className="divide-y divide-gray-200">
                 {users.length > 0 ? (
                   users.map((u) => (
-                    <tr key={u.id} className="hover:bg-gray-50 transition">
+                    <tr key={u._id || u.id} className="hover:bg-gray-50 transition">
                       <td className="px-6 py-4 font-semibold text-gray-900">{u.name}</td>
                       <td className="px-6 py-4 text-gray-700">{u.email}</td>
                       <td className="px-6 py-4">
@@ -91,10 +117,12 @@ export default function AdminUsers() {
                           {u.role === "admin" ? "👨‍💼 Admin" : "👤 User"}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-600">{u.createdAt || "N/A"}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600">
+                        {u.createdAt ? new Date(u.createdAt).toLocaleDateString() : "N/A"}
+                      </td>
                       <td className="px-6 py-4">
                         <button
-                          onClick={() => deleteUser(u.id)}
+                          onClick={() => deleteUser(u._id || u.id)}
                           className="text-red-600 hover:text-red-800 hover:bg-red-50 p-2 rounded-lg transition flex items-center gap-1"
                         >
                           <FiTrash2 /> Delete

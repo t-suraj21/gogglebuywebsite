@@ -17,6 +17,7 @@ export default function Home() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isProfileDropdown, setIsProfileDropdown] = useState(false);
+  const [isWearDropdown, setIsWearDropdown] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [email, setEmail] = useState("");
   const [filteredProducts, setFilteredProducts] = useState([]);
@@ -52,6 +53,17 @@ export default function Home() {
     }
   ];
 
+  const DropdownItem = ({ label, path }) => {
+  return (
+    <button
+      onClick={() => handleShopClick(path)}
+      className="text-left px-3 py-2 rounded-md hover:bg-blue-50 hover:text-blue-600 transition"
+    >
+      {label}
+    </button>
+  );
+};
+
   // Use real goggle products
   const featuredProducts = gogglesProducts.slice(0, 12);
 
@@ -60,9 +72,9 @@ export default function Home() {
   const popularProducts = gogglesProducts.slice(15, 23);
 
   const categories = [
-    { name: "Men Wear ", image: "/Image/32.jpeg" },
-    { name: "Female Wear ", image: "/Image/5.jpeg" },
-    { name: "Child Wear", image: "/Image/28.jpeg" }
+    { name: "Men Wear", image: "/Image/32.jpeg", path: "/male-wear" },
+    { name: "Female Wear", image: "/Image/5.jpeg", path: "/female-wear" },
+    { name: "Child Wear", image: "/Image/28.jpeg", path: "/child-wear" }
   ];
 
   const testimonials = [
@@ -104,10 +116,13 @@ export default function Home() {
   const handleLogout = () => {
     dispatch(logout());
     setIsProfileDropdown(false);
-    // Refresh page to show logout changes
+    // Clear cart and other state
+    localStorage.clear();
+    // Store any other necessary items before clearing
+    // Redirect to home
     setTimeout(() => {
-      window.location.href = "/home";
-    }, 300);
+      window.location.href = "/login";
+    }, 100);
   };
 
   const nextSlide = () => {
@@ -325,8 +340,59 @@ export default function Home() {
         {/* ================= LINK BAR (IMAGE STYLE) ================= */}
   <section className="bg-white border-b shadow-sm hidden md:block">
   <div className="max-w-7xl mx-auto px-4">
-    <div className="flex flex-wrap items-center justify-center gap-6 py-3 text-sm font-semibold text-gray-800">
+    <div className="flex flex-wrap items-center justify-center gap-10 py-3 text-sm font-semibold text-gray-800">
 
+      {/* MEN DROPDOWN */}
+      <div className="relative group">
+        <button className="relative px-2 py-1 hover:text-blue-600">
+          Men
+        </button>
+
+        <div className="absolute left-0 top-full mt-2 w-52 bg-white shadow-lg border rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+          <div className="flex flex-col p-3 gap-2 text-sm">
+            <DropdownItem label="Eyeglasses" path="/eyeglasses" />
+            <DropdownItem label="Computer Glasses" path="/computer-glasses" />
+            <DropdownItem label="Half Rim Frames" path="/half-rim-frames" />
+            <DropdownItem label="Rimless Frames" path="/rimless-frames" />
+            <DropdownItem label="Sunglasses" path="/sunglasses" />
+            <DropdownItem label="Contact Lenses" path="/contact-lenses" />
+          </div>
+        </div>
+      </div>
+
+      {/* WOMEN DROPDOWN */}
+      <div className="relative group">
+        <button className="relative px-2 py-1 hover:text-blue-600">
+          Women
+        </button>
+
+        <div className="absolute left-0 top-full mt-2 w-52 bg-white shadow-lg border rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+          <div className="flex flex-col p-3 gap-2 text-sm">
+            <DropdownItem label="Eyeglasses" path="/eyeglasses" />
+            <DropdownItem label="Computer Glasses" path="/computer-glasses" />
+            <DropdownItem label="Rimless Frames" path="/rimless-frames" />
+            <DropdownItem label="Sunglasses" path="/sunglasses" />
+            <DropdownItem label="Contact Lenses" path="/contact-lenses" />
+          </div>
+        </div>
+      </div>
+
+      {/* KIDS DROPDOWN */}
+      <div className="relative group">
+        <button className="relative px-2 py-1 hover:text-blue-600">
+          Kids
+        </button>
+
+        <div className="absolute left-0 top-full mt-2 w-52 bg-white shadow-lg border rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+          <div className="flex flex-col p-3 gap-2 text-sm">
+            <DropdownItem label="Kids Glasses" path="/kids-glasses" />
+            <DropdownItem label="Computer Glasses" path="/computer-glasses" />
+            <DropdownItem label="Sunglasses" path="/sunglasses" />
+          </div>
+        </div>
+      </div>
+
+      {/* TODAY DEALS (NORMAL LINK) */}
       <button
         onClick={() => handleShopClick("/deals")}
         className="relative px-2 py-1 transition-all duration-200 hover:text-blue-600 after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:w-0 after:bg-blue-600 after:transition-all hover:after:w-full"
@@ -334,58 +400,10 @@ export default function Home() {
         Today Deals
       </button>
 
-      <button
-        onClick={() => handleShopClick("/eyeglasses")}
-        className="relative px-2 py-1 transition-all duration-200 hover:text-blue-600 after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:w-0 after:bg-blue-600 after:transition-all hover:after:w-full"
-      >
-        Eyeglasses
-      </button>
-
-      <button
-        onClick={() => handleShopClick("/computer-glasses")}
-        className="relative px-2 py-1 transition-all duration-200 hover:text-blue-600 after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:w-0 after:bg-blue-600 after:transition-all hover:after:w-full"
-      >
-        Computer Glasses
-      </button>
-
-      <button
-        onClick={() => handleShopClick("/kids-glasses")}
-        className="relative px-2 py-1 transition-all duration-200 hover:text-blue-600 after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:w-0 after:bg-blue-600 after:transition-all hover:after:w-full"
-      >
-        Kids Glasses
-      </button>
-
-      <button
-        onClick={() => handleShopClick("/half-rim-frames")}
-        className="relative px-2 py-1 transition-all duration-200 hover:text-blue-600 after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:w-0 after:bg-blue-600 after:transition-all hover:after:w-full"
-      >
-        Half Rim Frames
-      </button>
-
-      <button
-        onClick={() => handleShopClick("/rimless-frames")}
-        className="relative px-2 py-1 transition-all duration-200 hover:text-blue-600 after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:w-0 after:bg-blue-600 after:transition-all hover:after:w-full"
-      >
-        Rimless Frames
-      </button>
-
-      <button
-        onClick={() => handleShopClick("/sunglasses")}
-        className="relative px-2 py-1 transition-all duration-200 hover:text-blue-600 after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:w-0 after:bg-blue-600 after:transition-all hover:after:w-full"
-      >
-        Sunglasses
-      </button>
-
-      <button
-        onClick={() => handleShopClick("/contact-lenses")}
-        className="relative px-2 py-1 transition-all duration-200 hover:text-blue-600 after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:w-0 after:bg-blue-600 after:transition-all hover:after:w-full"
-      >
-        Contact Lenses
-      </button>
-
     </div>
   </div>
 </section>
+
 
 
 
@@ -479,7 +497,11 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {categories.map((cat, idx) => (
-              <div key={idx} className="relative group cursor-pointer overflow-hidden rounded-lg">
+              <button
+                key={idx}
+                onClick={() => handleShopClick(cat.path)}
+                className="relative group cursor-pointer overflow-hidden rounded-lg text-left transition-transform hover:scale-105"
+              >
                 <img
                   src={cat.image}
                   alt={cat.name}
@@ -490,11 +512,11 @@ export default function Home() {
                 />
                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition"></div>
                 <div className="absolute bottom-6 left-0 right-0 text-center">
-                  <h3 className="text-black text-2xl font-bold  text-gray-900 inline-block px-8 py-2">
+                  <h3 className="text-black text-2xl font-bold text-gray-900 inline-block px-8 py-2 bg-white/90 rounded-lg group-hover:bg-white transition">
                     {cat.name}
                   </h3>
                 </div>
-              </div>
+              </button>
             ))}
           </div>
         </div>

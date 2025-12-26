@@ -23,6 +23,11 @@ import RimlessFrames from "./pages/RimlessFrames";
 import Sunglasses from "./pages/Sunglasses";
 import ContactLenses from "./pages/ContactLenses";
 
+// Wear Category Pages
+import MenWear from "./pages/MenWear";
+import FemaleWear from "./pages/FemaleWear";
+import ChildWear from "./pages/ChildWear";
+
 // Admin Pages
 import AdminDashboard from "./pages/Admin/Dashboard";
 import AdminProducts from "./pages/Admin/Products";
@@ -72,6 +77,11 @@ export default function App() {
       <Route path="/rimless-frames" element={<PageTransition><ProtectedRoute><RimlessFrames /></ProtectedRoute></PageTransition>} />
       <Route path="/sunglasses" element={<PageTransition><ProtectedRoute><Sunglasses /></ProtectedRoute></PageTransition>} />
       <Route path="/contact-lenses" element={<PageTransition><ProtectedRoute><ContactLenses /></ProtectedRoute></PageTransition>} />
+
+      {/* Wear Categories */}
+      <Route path="/male-wear" element={<PageTransition><ProtectedRoute><MenWear /></ProtectedRoute></PageTransition>} />
+      <Route path="/female-wear" element={<PageTransition><ProtectedRoute><FemaleWear /></ProtectedRoute></PageTransition>} />
+      <Route path="/child-wear" element={<PageTransition><ProtectedRoute><ChildWear /></ProtectedRoute></PageTransition>} />
 
       {/* Admin */}
       <Route path="/admin/edit-home" element={<PageTransition><ProtectedRoute><EditHome /></ProtectedRoute></PageTransition>} />

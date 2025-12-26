@@ -9,23 +9,44 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [localSuccess, setLocalSuccess] = useState(false);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { loading, error, success, user } = useSelector((state) => state.auth);
 
-  // Handle successful login
+  // Load remembered email
+  useEffect(() => {
+    const rememberedEmail = localStorage.getItem("rememberEmail");
+    if (rememberedEmail) {
+      setEmail(rememberedEmail);
+      setRememberMe(true);
+    }
+  }, []);
+
+  // Handle successful login - redirect after showing success message
   useEffect(() => {
     if (success && user) {
-      // Show success message for a moment, then redirect
+      setLocalSuccess(true);
+      
+      // Clear success state and redirect after a delay
       const timer = setTimeout(() => {
         dispatch(clearSuccess());
+        setLocalSuccess(false);
         navigate("/home");
       }, 1500);
       
       return () => clearTimeout(timer);
     }
   }, [success, user, navigate, dispatch]);
+
+  // Clear errors when component unmounts or when user starts typing
+  useEffect(() => {
+    return () => {
+      dispatch(clearError());
+      dispatch(clearSuccess());
+    };
+  }, [dispatch]);
 
   const validateForm = () => {
     if (!email || !password) {
@@ -43,18 +64,24 @@ export default function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    if (!validateForm()) return;
+    if (!validateForm()) {
+      return;
+    }
 
     try {
-      await dispatch(loginUser({ email, password })).unwrap();
+      // Dispatch login action
+      const result = await dispatch(loginUser({ email: email.toLowerCase(), password })).unwrap();
 
-      if (rememberMe) {
-        localStorage.setItem("rememberEmail", email);
+      if (result) {
+        if (rememberMe) {
+          localStorage.setItem("rememberEmail", email);
+        } else {
+          localStorage.removeItem("rememberEmail");
+        }
       }
-
-      // Success! Redux will trigger useEffect above to navigate
     } catch (err) {
-      // Error is handled by Redux
+      console.error("Login error:", err);
+      // Error is already handled by Redux and displayed in UI
     }
   };
 
@@ -125,7 +152,7 @@ export default function Login() {
             </div>
 
             {/* Success Alert */}
-            {success && user && (
+            {localSuccess && user && (
               <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-start gap-3 animate-bounce">
                 <FiCheck className="text-green-600 text-2xl mt-1 flex-shrink-0" />
                 <div>
@@ -136,7 +163,7 @@ export default function Login() {
             )}
 
             {/* Error Alert */}
-            {error && !success && (
+            {error && !localSuccess && (
               <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
                 <span className="text-red-600 text-2xl mt-1">⚠️</span>
                 <div>
@@ -147,7 +174,7 @@ export default function Login() {
             )}
 
             {/* Form */}
-            <form onSubmit={handleLogin} className="space-y-6" disabled={loading || success}>
+            <form onSubmit={handleLogin} className="space-y-6" disabled={loading || localSuccess}>
               {/* Email Field */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -158,7 +185,10 @@ export default function Login() {
                   <input
                     type="email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (error) dispatch(clearError());
+                    }}
                     placeholder="you@example.com"
                     className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-600 transition-colors"
                   />
@@ -175,7 +205,10 @@ export default function Login() {
                   <input
                     type={showPassword ? "text" : "password"}
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (error) dispatch(clearError());
+                    }}
                     placeholder="••••••••"
                     className="w-full pl-12 pr-12 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-600 transition-colors"
                   />

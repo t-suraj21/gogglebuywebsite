@@ -130,23 +130,29 @@ const authSlice = createSlice({
     }
   },
   extraReducers: (builder) => {
-    // Login
+// Login
     builder
       .addCase(loginUser.pending, (state) => {
         state.loading = true;
         state.error = null;
+        state.success = false;
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload;
         state.isAuthenticated = true;
         state.success = true;
+        state.error = null;
         state.token = localStorage.getItem("token");
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
         state.isAuthenticated = false;
+        state.user = null;
+        state.token = null;
+        state.success = false;
+        localStorage.removeItem("token");
       });
 
     // Register

@@ -26,9 +26,17 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Handle 401 Unauthorized - token expired or invalid
     if (error.response?.status === 401) {
-      localStorage.removeItem("token");
-      window.location.href = "/login";
+      const currentPath = window.location.pathname;
+      
+      // Only redirect to login if not already on login/register page
+      if (currentPath !== "/login" && currentPath !== "/register") {
+        // Clear token from localStorage
+        localStorage.removeItem("token");
+        // Redirect to login
+        window.location.href = "/login";
+      }
     }
     return Promise.reject(error);
   }

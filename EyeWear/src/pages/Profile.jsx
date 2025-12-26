@@ -28,8 +28,10 @@ export default function Profile() {
 
   const handleLogout = () => {
     dispatch(logout());
-    localStorage.removeItem("token");
-    navigate("/login");
+    localStorage.clear();
+    setTimeout(() => {
+      window.location.href = "/login";
+    }, 100);
   };
 
   const handleEditChange = (e) => {

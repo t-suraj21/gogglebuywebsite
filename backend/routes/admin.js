@@ -148,6 +148,112 @@ router.get("/orders/stats", adminAuth, async (req, res) => {
   }
 });
 
+// Get all orders
+router.get("/orders", adminAuth, async (req, res) => {
+  try {
+    const orders = await Order.find()
+      .populate("userId", "name email")
+      .sort({ createdAt: -1 });
+
+    res.json(orders);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching orders", error: error.message });
+  }
+});
+
+// Update order status
+router.put("/orders/:id/status", adminAuth, async (req, res) => {
+  try {
+    const { status } = req.body;
+
+    if (!["pending", "processing", "shipped", "delivered", "cancelled"].includes(status)) {
+      return res.status(400).json({ message: "Invalid status" });
+    }
+
+    const order = await Order.findByIdAndUpdate(
+      req.params.id,
+      { status },
+      { new: true }
+    ).populate("userId", "name email");
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    res.json({
+      message: "Order status updated successfully",
+      order
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error updating order status", error: error.message });
+  }
+});
+
+// Add new product
+router.post("/products", adminAuth, async (req, res) => {
+  try {
+    const productData = {
+      ...req.body,
+      addedBy: req.user.id,
+      lastModifiedBy: req.user.id
+    };
+
+    const product = new Product(productData);
+    await product.save();
+
+    await product.populate("addedBy", "name email");
+    await product.populate("lastModifiedBy", "name email");
+
+    res.status(201).json({
+      message: "Product added successfully",
+      product
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error adding product", error: error.message });
+  }
+});
+
+// Update product
+router.put("/products/:id", adminAuth, async (req, res) => {
+  try {
+    const product = await Product.findByIdAndUpdate(
+      req.params.id,
+      {
+        ...req.body,
+        lastModifiedBy: req.user.id
+      },
+      { new: true }
+    ).populate("addedBy", "name email")
+     .populate("lastModifiedBy", "name email");
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    res.json({
+      message: "Product updated successfully",
+      product
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error updating product", error: error.message });
+  }
+});
+
+// Delete product
+router.delete("/products/:id", adminAuth, async (req, res) => {
+  try {
+    const product = await Product.findByIdAndDelete(req.params.id);
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    res.json({ message: "Product deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Error deleting product", error: error.message });
+  }
+});
+
 // Get dashboard data
 router.get("/dashboard", adminAuth, async (req, res) => {
   try {
@@ -155,8 +261,14 @@ router.get("/dashboard", adminAuth, async (req, res) => {
     const totalProducts = await Product.countDocuments();
     const totalOrders = await Order.countDocuments();
     const totalRevenue = await Order.aggregate([
+      { $match: { status: "delivered" } },
       { $group: { _id: null, total: { $sum: "$total" } } }
     ]);
+
+    const pendingOrders = await Order.countDocuments({ status: "pending" });
+    const processingOrders = await Order.countDocuments({ status: "processing" });
+    const shippedOrders = await Order.countDocuments({ status: "shipped" });
+    const deliveredOrders = await Order.countDocuments({ status: "delivered" });
 
     const recentOrders = await Order.find()
       .populate("userId", "name email")
@@ -175,7 +287,11 @@ router.get("/dashboard", adminAuth, async (req, res) => {
         totalUsers,
         totalProducts,
         totalOrders,
-        totalRevenue: totalRevenue[0]?.total || 0
+        totalRevenue: totalRevenue[0]?.total || 0,
+        pendingOrders,
+        processingOrders,
+        shippedOrders,
+        deliveredOrders
       },
       recentOrders,
       topProducts

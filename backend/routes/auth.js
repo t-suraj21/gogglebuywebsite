@@ -98,14 +98,18 @@ router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    console.log("🔐 Login attempt:", { email, password: "***" });
+
     if (!email || !password) {
+      console.error("❌ Missing email or password");
       return res.status(400).json({ message: "Email and password are required" });
     }
 
-    // Find user and select password
-    const user = await User.findOne({ email }).select("+password");
+    // Find user with lowercase email and select password
+    const user = await User.findOne({ email: email.toLowerCase() }).select("+password");
 
     if (!user) {
+      console.error("❌ User not found with email:", email.toLowerCase());
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
@@ -113,8 +117,11 @@ router.post("/login", async (req, res) => {
     const isPasswordValid = await user.comparePassword(password);
 
     if (!isPasswordValid) {
+      console.error("❌ Invalid password for user:", email.toLowerCase());
       return res.status(401).json({ message: "Invalid email or password" });
     }
+
+    console.log("✅ Login successful for user:", user._id);
 
     const token = generateToken(user);
 
@@ -124,7 +131,7 @@ router.post("/login", async (req, res) => {
       user: user.toJSON()
     });
   } catch (error) {
-    console.error("Login error:", error);
+    console.error("❌ Login error:", error);
     res.status(500).json({ message: "Error logging in", error: error.message });
   }
 });

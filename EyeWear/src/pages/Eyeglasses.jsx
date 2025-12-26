@@ -1,8 +1,11 @@
 import { useState, useEffect } from "react";
 import { FiEye, FiHeart, FiShoppingCart, FiStar, FiFilter, FiGrid, FiList, FiZap } from "react-icons/fi";
 import { FaHeart } from "react-icons/fa";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { addToCart } from "../redux/cartSlice";
+import AuthModal from "../components/AuthModal";
+import MobileAddToCartButton from "../components/MobileAddToCartButton";
 import { Link } from "react-router-dom";
 
 export default function Eyeglasses() {
@@ -10,7 +13,10 @@ export default function Eyeglasses() {
   const [sortBy, setSortBy] = useState("popular");
   const [viewMode, setViewMode] = useState("grid");
   const [priceRange, setPriceRange] = useState([0, 10000]);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const user = useSelector((state) => state.auth.user);
 
   const eyeglasses = [
     {
@@ -222,6 +228,12 @@ export default function Eyeglasses() {
   });
 
   const handleAddToCart = (product) => {
+    // Check if user is logged in
+    if (!user) {
+      setShowAuthModal(true);
+      return;
+    }
+
     dispatch(addToCart({
       _id: product.id,
       name: product.name,
@@ -229,6 +241,9 @@ export default function Eyeglasses() {
       image: product.image,
       quantity: 1
     }));
+
+    // Redirect to cart
+    navigate("/cart");
   };
 
   const gridColsClass = viewMode === "grid"
@@ -511,6 +526,15 @@ export default function Eyeglasses() {
           </div>
         </div>
       </section>
+
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onLoginSuccess={() => {
+          setShowAuthModal(false);
+        }}
+      />
     </div>
   );
 }

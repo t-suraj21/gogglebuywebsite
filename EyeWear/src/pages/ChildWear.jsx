@@ -5,6 +5,7 @@ import AdminMenuWrapper from "../components/AdminMenuWrapper";
 import { gogglesProducts } from "../data/products";
 import { FiSearch, FiMenu, FiX, FiShoppingCart, FiUser, FiLogOut, FiHome } from "react-icons/fi";
 import { Link, useNavigate } from "react-router-dom";
+import MobileAddToCartButton from "../components/MobileAddToCartButton";
 
 export default function ChildWear() {
   const navigate = useNavigate();

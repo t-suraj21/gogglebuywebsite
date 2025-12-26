@@ -1,15 +1,21 @@
 import { useState, useEffect } from "react";
 import { FiSmile, FiShield, FiHeart, FiStar, FiShoppingCart, FiTrendingUp, FiAward } from "react-icons/fi";
 import { FaHeart } from "react-icons/fa";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { addToCart } from "../redux/cartSlice";
+import AuthModal from "../components/AuthModal";
+import MobileAddToCartButton from "../components/MobileAddToCartButton";
 import { Link } from "react-router-dom";
 
 export default function KidsGlasses() {
   const [selectedAge, setSelectedAge] = useState("all");
   const [selectedStyle, setSelectedStyle] = useState("all");
-  const [sortBy, setSortBy] = useState("popular");
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const user = useSelector((state) => state.auth.user);
+  const [sortBy, setSortBy] = useState("popular");
 
   const kidsGlasses = [
     {
@@ -214,6 +220,12 @@ export default function KidsGlasses() {
   });
 
   const handleAddToCart = (product) => {
+    // Check if user is logged in
+    if (!user) {
+      setShowAuthModal(true);
+      return;
+    }
+
     dispatch(addToCart({
       _id: product.id,
       name: product.name,
@@ -221,6 +233,9 @@ export default function KidsGlasses() {
       image: product.image,
       quantity: 1
     }));
+
+    // Redirect to cart
+    navigate("/cart");
   };
 
   return (
@@ -539,6 +554,15 @@ export default function KidsGlasses() {
           </div>
         </div>
       </section>
+
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onLoginSuccess={() => {
+          setShowAuthModal(false);
+        }}
+      />
     </div>
   );
 }

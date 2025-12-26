@@ -1,5 +1,10 @@
 import { useState } from "react";
 import { Heart, ShoppingCart, Star, Sun, Shield, Eye, Award, Truck, RefreshCw, Search, Filter, ChevronRight, Zap, TrendingUp } from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { addToCart } from "../redux/cartSlice";
+import AuthModal from "../components/AuthModal";
+import MobileAddToCartButton from "../components/MobileAddToCartButton";
 
 export default function Sunglasses() {
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -7,6 +12,10 @@ export default function Sunglasses() {
   const [sortBy, setSortBy] = useState("popular");
   const [wishlist, setWishlist] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const user = useSelector((state) => state.auth.user);
 
   const products = [
     {
@@ -195,6 +204,25 @@ export default function Sunglasses() {
     setWishlist(prev => 
       prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
     );
+  };
+
+  const handleAddToCart = (product) => {
+    // Check if user is logged in
+    if (!user) {
+      setShowAuthModal(true);
+      return;
+    }
+
+    dispatch(addToCart({
+      _id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.image,
+      quantity: 1
+    }));
+
+    // Redirect to cart
+    navigate("/cart");
   };
 
   const filteredProducts = products.filter(product => {
@@ -472,7 +500,10 @@ export default function Sunglasses() {
                   </button>
 
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-end justify-center pb-8">
-                    <button className="bg-white text-amber-600 px-8 py-3 rounded-full font-bold hover:bg-amber-50 transition-all flex items-center gap-2 shadow-xl transform translate-y-6 group-hover:translate-y-0">
+                    <button 
+                      onClick={() => handleAddToCart(product)}
+                      className="bg-white text-amber-600 px-8 py-3 rounded-full font-bold hover:bg-amber-50 transition-all flex items-center gap-2 shadow-xl transform translate-y-6 group-hover:translate-y-0"
+                    >
                       <ShoppingCart size={20} />
                       Add to Cart
                     </button>
@@ -553,6 +584,15 @@ export default function Sunglasses() {
           </button>
         </div>
       </section>
+
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onLoginSuccess={() => {
+          setShowAuthModal(false);
+        }}
+      />
     </div>
   );
 }

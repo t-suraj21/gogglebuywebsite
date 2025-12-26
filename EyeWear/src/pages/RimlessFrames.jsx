@@ -1,7 +1,16 @@
 import { useState } from "react";
-import { Heart, ShoppingCart, Star, Eye, Feather, Award, Shield, Truck, RefreshCw, Search, Filter, ChevronDown, Sparkles, Zap, Users } from "lucide-react";
+import { Heart, ShoppingCart, Star, Eye, Feather, TrendingUp, Zap, Award, Shield, Truck, RefreshCw, Search, Filter, ChevronDown, Sparkles, Users } from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { addToCart } from "../redux/cartSlice";
+import AuthModal from "../components/AuthModal";
+import MobileAddToCartButton from "../components/MobileAddToCartButton";
 
 export default function RimlessFrames() {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const user = useSelector((state) => state.auth.user);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const [selectedStyle, setSelectedStyle] = useState("all");
   const [selectedMaterial, setSelectedMaterial] = useState("all");
   const [selectedPriceRange, setSelectedPriceRange] = useState("all");
@@ -188,6 +197,25 @@ export default function RimlessFrames() {
     
     return styleMatch && materialMatch && priceMatch && searchMatch;
   });
+
+  const handleAddToCart = (product) => {
+    // Check if user is logged in
+    if (!user) {
+      setShowAuthModal(true);
+      return;
+    }
+
+    dispatch(addToCart({
+      _id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.image,
+      quantity: 1
+    }));
+
+    // Redirect to cart
+    navigate("/cart");
+  };
 
   const sortedProducts = [...filteredProducts].sort((a, b) => {
     switch (sortBy) {
@@ -526,7 +554,10 @@ export default function RimlessFrames() {
                   </button>
 
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-end justify-center pb-8">
-                    <button className="bg-white text-blue-600 px-8 py-3 rounded-full font-bold hover:bg-blue-50 transition-all flex items-center gap-2 shadow-xl transform translate-y-6 group-hover:translate-y-0">
+                    <button 
+                      onClick={() => handleAddToCart(product)}
+                      className="bg-white text-blue-600 px-8 py-3 rounded-full font-bold hover:bg-blue-50 transition-all flex items-center gap-2 shadow-xl transform translate-y-6 group-hover:translate-y-0"
+                    >
                       <ShoppingCart size={20} />
                       Add to Cart
                     </button>
@@ -561,6 +592,15 @@ export default function RimlessFrames() {
           </div>
         </div>
       </section>
+
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onLoginSuccess={() => {
+          setShowAuthModal(false);
+        }}
+      />
     </div>
   );
 }

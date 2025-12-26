@@ -1,11 +1,20 @@
 import { useState } from "react";
 import { Eye, Droplet, Shield, Clock, Star, ShoppingCart, Heart, Award, Truck, RefreshCw, Search, Sparkles, ChevronRight, Zap, AlertCircle } from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { addToCart } from "../redux/cartSlice";
+import AuthModal from "../components/AuthModal";
+import MobileAddToCartButton from "../components/MobileAddToCartButton";
 
 export default function ContactLenses() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [sortBy, setSortBy] = useState("popular");
   const [wishlist, setWishlist] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const user = useSelector((state) => state.auth.user);
 
   const contactLenses = [
     {
@@ -192,6 +201,25 @@ export default function ContactLenses() {
     
     return categoryMatch && searchMatch;
   });
+
+  const handleAddToCart = (product) => {
+    // Check if user is logged in
+    if (!user) {
+      setShowAuthModal(true);
+      return;
+    }
+
+    dispatch(addToCart({
+      _id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.image,
+      quantity: 1
+    }));
+
+    // Redirect to cart
+    navigate("/cart");
+  };
 
   const sortedProducts = [...filteredProducts].sort((a, b) => {
     switch (sortBy) {
@@ -444,7 +472,10 @@ export default function ContactLenses() {
                   </button>
 
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-end justify-center pb-8">
-                    <button className="bg-white text-cyan-600 px-8 py-3 rounded-full font-bold hover:bg-cyan-50 transition-all flex items-center gap-2 shadow-xl transform translate-y-6 group-hover:translate-y-0">
+                    <button 
+                      onClick={() => handleAddToCart(product)}
+                      className="bg-white text-cyan-600 px-8 py-3 rounded-full font-bold hover:bg-cyan-50 transition-all flex items-center gap-2 shadow-xl transform translate-y-6 group-hover:translate-y-0"
+                    >
                       <ShoppingCart size={20} />
                       Add to Cart
                     </button>

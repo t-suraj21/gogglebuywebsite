@@ -4,6 +4,7 @@ import { useSelector, useDispatch } from "react-redux";
 import AdminMenuWrapper from "../components/AdminMenuWrapper";
 import ProductCard from "../components/ProductCard";
 import AuthModal from "../components/AuthModal";
+import MobileAddToCartButton from "../components/MobileAddToCartButton";
 import { gogglesProducts } from "../data/products";
 import { logout } from "../redux/authSlice";
 
@@ -242,15 +243,15 @@ export default function Home() {
                       <span className="text-sm font-medium text-gray-700">{user.name?.split(" ")[0]}</span>
                     </button>
                     {isProfileDropdown && (
-                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200">
-                        <a href="#profile" className="block px-4 py-3 text-gray-700 hover:bg-blue-50 transition">
+                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                        <Link to="/profile" onClick={() => setIsProfileDropdown(false)} className="block px-4 py-3 text-gray-700 hover:bg-blue-50 transition">
                           <FiUser className="inline mr-2" size={16} />
                           My Profile
-                        </a>
-                        <a href="#orders" className="block px-4 py-3 text-gray-700 hover:bg-blue-50 transition">
+                        </Link>
+                        <Link to="/orders" onClick={() => setIsProfileDropdown(false)} className="block px-4 py-3 text-gray-700 hover:bg-blue-50 transition">
                           <FiShoppingCart className="inline mr-2" size={16} />
                           My Orders
-                        </a>
+                        </Link>
                         <hr className="my-2" />
                         <button
                           onClick={handleLogout}
@@ -729,6 +730,9 @@ export default function Home() {
         }}
         onLoginSuccess={handleAuthSuccess}
       />
+
+      {/* Mobile Add to Cart Button */}
+      <MobileAddToCartButton />
     </div>
     );
 }      

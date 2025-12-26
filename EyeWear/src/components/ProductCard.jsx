@@ -1,23 +1,22 @@
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { FiHeart, FiShoppingCart, FiEye } from "react-icons/fi";
 import { FaHeart } from "react-icons/fa";
 import { addToCart } from "../redux/cartSlice";
 import AuthModal from "./AuthModal";
-import AddToCartPopup from "./AddToCartPopup";
-import BuyNowPopup from "./BuyNowPopup";
 
 export default function ProductCard({ product }) {
   const [isFavorite, setIsFavorite] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const [showAddToCartPopup, setShowAddToCartPopup] = useState(false);
-  const [showBuyNowPopup, setShowBuyNowPopup] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const user = useSelector((state) => state.auth.user);
 
   const handleAddToCart = (e) => {
     e.preventDefault();
+    e.stopPropagation();
     
     // Check if user is logged in
     if (!user) {
@@ -25,6 +24,7 @@ export default function ProductCard({ product }) {
       return;
     }
 
+    // Add to cart
     dispatch(addToCart({
       _id: product._id,
       name: product.name,
@@ -34,33 +34,13 @@ export default function ProductCard({ product }) {
       brand: product.brand,
       quantity: 1
     }));
-    setShowAddToCartPopup(true);
-  };
-
-  const handleBuyNow = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    // Check if user is logged in
-    if (!user) {
-      setShowAuthModal(true);
-      return;
-    }
-
-    dispatch(addToCart({
-      _id: product._id,
-      name: product.name,
-      price: product.price,
-      discount: product.discount || 0,
-      image: product.images?.[0],
-      brand: product.brand,
-      quantity: 1
-    }));
-    setShowBuyNowPopup(true);
+    
+    // Redirect to cart immediately
+    navigate("/cart");
   };
 
   const handleLoginSuccess = () => {
-    // After login, add to cart
+    // After login, add to cart and redirect
     dispatch(addToCart({
       _id: product._id,
       name: product.name,
@@ -70,7 +50,7 @@ export default function ProductCard({ product }) {
       brand: product.brand,
       quantity: 1
     }));
-    setShowAddToCartPopup(true);
+    navigate("/cart");
   };
 
   const handleFavorite = (e) => {
@@ -220,26 +200,6 @@ export default function ProductCard({ product }) {
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
         onLoginSuccess={handleLoginSuccess}
-      />
-
-      {/* Add to Cart Popup */}
-      <AddToCartPopup
-        isOpen={showAddToCartPopup}
-        onClose={() => setShowAddToCartPopup(false)}
-        productName={product.name}
-        productImage={product.images?.[0]}
-        productPrice={product.price}
-        productDiscount={discount}
-      />
-
-      {/* Buy Now Popup */}
-      <BuyNowPopup
-        isOpen={showBuyNowPopup}
-        onClose={() => setShowBuyNowPopup(false)}
-        productName={product.name}
-        productImage={product.images?.[0]}
-        productPrice={product.price}
-        productDiscount={discount}
       />
     </div>
   );

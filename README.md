@@ -152,15 +152,8 @@ gogglebuywebsite/
    npm install
    ```
 
-3. **Create `.env` file with:**
-   ```env
-   PORT=8001
-   NODE_ENV=development
-   MONGODB_URI=mongodb://localhost:27017/eyewear
-   JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
-   ```
 
-4. **Start the server:**
+3. **Start the server:**
    ```bash
    npm run dev
    ```

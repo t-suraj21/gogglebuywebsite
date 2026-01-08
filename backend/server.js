@@ -28,7 +28,7 @@ const PORT = process.env.PORT || 8001;
 
 // Middleware
 app.use(cors({
-  origin: ["http://localhost:5173", "http://localhost:3000", "http://localhost:8001"],
+  origin: ["https://gogglebuywebsite.onrender.com", "http://localhost:3000", "http://localhost:8001"],
   credentials: true
 }));
 app.use(express.json({ limit: '50mb' }));

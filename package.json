@@ -5,8 +5,9 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js",
+    "dev": "node  backend/server.js",
+    "build":"npm install && npm install --prefix EyeWear && npm run build --prefix EyeWear",
+    "start":"node backend/server.js",
     "seed": "node seed.js"
   },
   "keywords": ["eyewear", "ecommerce", "api"],

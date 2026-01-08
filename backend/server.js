@@ -13,7 +13,7 @@ import adminRoutes from "./routes/admin.js";
 
 // Get __dirname
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = path.resolve();
 
 // Load environment variables
 dotenv.config();
@@ -56,6 +56,12 @@ app.use("/api/products", productRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/admin", adminRoutes);
 
+
+app.use(express.static(path.join(__dirname, "/EyeWear/dist")));
+app.get("*", (_, res) => {
+  res.sendFile(path.resolve(__dirname, "EyeWear", "dist", "index.html"));
+})
+
 // 404 handler
 app.use((req, res) => {
   res.status(404).json({ message: "Route not found" });
@@ -69,6 +75,8 @@ app.use((err, req, res, next) => {
     error: process.env.NODE_ENV === "development" ? err.message : "Something went wrong"
   });
 });
+
+app.use
 
 // Start server
 app.listen(PORT, () => {

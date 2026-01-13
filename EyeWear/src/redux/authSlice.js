@@ -99,7 +99,9 @@ const authSlice = createSlice({
     loading: false,
     error: null,
     success: false,
-    isAuthenticated: !!localStorage.getItem("token")
+    isAuthenticated: !!localStorage.getItem("token"),
+    showLoginPopup: false,
+    loginPopupDismissed: false
   },
   reducers: {
     loginSuccess: (state, action) => {
@@ -127,6 +129,16 @@ const authSlice = createSlice({
       if (action.payload) {
         localStorage.setItem("token", action.payload);
       }
+    },
+    showLoginPopup: (state) => {
+      state.showLoginPopup = true;
+    },
+    hideLoginPopup: (state) => {
+      state.showLoginPopup = false;
+      state.loginPopupDismissed = true;
+    },
+    resetLoginPopup: (state) => {
+      state.loginPopupDismissed = false;
     }
   },
   extraReducers: (builder) => {
@@ -224,5 +236,5 @@ const authSlice = createSlice({
   }
 });
 
-export const { loginSuccess, logout, clearError, clearSuccess, setToken } = authSlice.actions;
+export const { loginSuccess, logout, clearError, clearSuccess, setToken, showLoginPopup, hideLoginPopup, resetLoginPopup } = authSlice.actions;
 export default authSlice.reducer;

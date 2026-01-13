@@ -2,19 +2,20 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { FiX, FiMail, FiLock, FiUser } from "react-icons/fi";
-import { loginUser, registerUser } from "../redux/authSlice";
+import { loginUser, registerUser, hideLoginPopup } from "../redux/authSlice";
 
-export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
+export default function AuthModal() {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const authLoading = useSelector((state) => state.auth.loading);
+  const isOpen = useSelector((state) => state.auth.showLoginPopup);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,8 +26,7 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
       if (isLogin) {
         // Handle login
         await dispatch(loginUser({ email, password })).unwrap();
-        onLoginSuccess?.();
-        onClose();
+        dispatch(hideLoginPopup());
       } else {
         // Handle registration
         await dispatch(registerUser({ name, email, password })).unwrap();
@@ -44,15 +44,15 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed top-0 right-0 z-50 p-4 pointer-events-none">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto animate-in fade-in slide-in-from-right duration-300 pointer-events-auto">
         {/* Header */}
-        <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 flex items-center justify-between">
+        <div className="sticky top-0 bg-linear-to-r from-blue-600 to-blue-700 px-6 py-4 flex items-center justify-between">
           <h2 className="text-xl font-bold text-white">
             {isLogin ? "Welcome Back" : "Create Account"}
           </h2>
           <button
-            onClick={onClose}
+            onClick={() => dispatch(hideLoginPopup())}
             className="text-white hover:bg-white/20 p-2 rounded-full transition"
           >
             <FiX size={24} />

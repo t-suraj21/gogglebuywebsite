@@ -4,26 +4,17 @@ import { useNavigate } from "react-router-dom";
 import { FiHeart, FiShoppingCart, FiEye } from "react-icons/fi";
 import { FaHeart } from "react-icons/fa";
 import { addToCart } from "../redux/cartSlice";
-import AuthModal from "./AuthModal";
 
 export default function ProductCard({ product }) {
   const [isFavorite, setIsFavorite] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const [showAuthModal, setShowAuthModal] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const user = useSelector((state) => state.auth.user);
 
   const handleAddToCart = (e) => {
     e.preventDefault();
     e.stopPropagation();
     
-    // Check if user is logged in
-    if (!user) {
-      setShowAuthModal(true);
-      return;
-    }
-
     // Add to cart
     dispatch(addToCart({
       _id: product._id,
@@ -36,20 +27,6 @@ export default function ProductCard({ product }) {
     }));
     
     // Redirect to cart immediately
-    navigate("/cart");
-  };
-
-  const handleLoginSuccess = () => {
-    // After login, add to cart and redirect
-    dispatch(addToCart({
-      _id: product._id,
-      name: product.name,
-      price: product.price,
-      discount: product.discount || 0,
-      image: product.images?.[0],
-      brand: product.brand,
-      quantity: 1
-    }));
     navigate("/cart");
   };
 
@@ -194,13 +171,6 @@ export default function ProductCard({ product }) {
           Add to Cart
         </button>
       </div>
-
-      {/* Auth Modal */}
-      <AuthModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        onLoginSuccess={handleLoginSuccess}
-      />
     </div>
   );
 }

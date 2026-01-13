@@ -4,14 +4,12 @@ import { FaHeart } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { addToCart } from "../redux/cartSlice";
-import AuthModal from "../components/AuthModal";
 import MobileAddToCartButton from "../components/MobileAddToCartButton";
 import { Link } from "react-router-dom";
 
 export default function ComputerGlasses() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [sortBy, setSortBy] = useState("popular");
-  const [showAuthModal, setShowAuthModal] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const user = useSelector((state) => state.auth.user);
@@ -147,12 +145,6 @@ export default function ComputerGlasses() {
   });
 
   const handleAddToCart = (product) => {
-    // Check if user is logged in
-    if (!user) {
-      setShowAuthModal(true);
-      return;
-    }
-
     dispatch(addToCart({
       _id: product.id,
       name: product.name,
@@ -328,7 +320,7 @@ export default function ComputerGlasses() {
               <h2 className="text-3xl font-bold mb-6">Understanding Blue Light</h2>
               <div className="space-y-4">
                 <div className="flex items-start gap-4">
-                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center shrink-0 mt-1">
                     <span className="text-sm font-bold">1</span>
                   </div>
                   <div>
@@ -337,7 +329,7 @@ export default function ComputerGlasses() {
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
-                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center shrink-0 mt-1">
                     <span className="text-sm font-bold">2</span>
                   </div>
                   <div>
@@ -346,7 +338,7 @@ export default function ComputerGlasses() {
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
-                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center shrink-0 mt-1">
                     <span className="text-sm font-bold">3</span>
                   </div>
                   <div>
@@ -381,14 +373,6 @@ export default function ComputerGlasses() {
         </div>
       </section>
 
-      {/* Auth Modal */}
-      <AuthModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        onLoginSuccess={() => {
-          setShowAuthModal(false);
-        }}
-      />
     </div>
   );
 }

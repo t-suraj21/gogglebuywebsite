@@ -3,14 +3,12 @@ import { Heart, ShoppingCart, Star, Eye, Feather, TrendingUp, Zap, Award, Shield
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { addToCart } from "../redux/cartSlice";
-import AuthModal from "../components/AuthModal";
 import MobileAddToCartButton from "../components/MobileAddToCartButton";
 
 export default function HalfRimFrames() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const user = useSelector((state) => state.auth.user);
-  const [showAuthModal, setShowAuthModal] = useState(false);
   const [selectedStyle, setSelectedStyle] = useState("all");
   const [selectedMaterial, setSelectedMaterial] = useState("all");
   const [selectedPriceRange, setSelectedPriceRange] = useState("all");
@@ -225,12 +223,6 @@ export default function HalfRimFrames() {
   });
 
   const handleAddToCart = (product) => {
-    // Check if user is logged in
-    if (!user) {
-      setShowAuthModal(true);
-      return;
-    }
-
     dispatch(addToCart({
       _id: product.id,
       name: product.name,
@@ -627,14 +619,6 @@ export default function HalfRimFrames() {
         </div>
       </section>
 
-      {/* Auth Modal */}
-      <AuthModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        onLoginSuccess={() => {
-          setShowAuthModal(false);
-        }}
-      />
     </div>
   );
 }

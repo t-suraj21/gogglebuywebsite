@@ -1,5 +1,6 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { useEffect } from "react";
+import { useDispatch } from "react-redux";
 
 // Splash / Landing
 import SplashScreen from "./splash/SplashScreen";
@@ -38,11 +39,19 @@ import EditLinks from "./pages/Admin/EditLinks";
 
 // Protected Route
 
-import ProductViewRoute from "./components/ProductViewRoute";
-
-import AuthModal from "./components/AuthModal";
 import PageTransition from "./components/PageTransition";
 import AuthInitializer from "./components/AuthInitializer";
+import AuthModal from "./components/AuthModal";
+import { resetLoginPopup } from "./redux/authSlice";
+
+export default function App() {
+  const location = useLocation();
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    // Show popup on every page change
+    dispatch(resetLoginPopup());
+  }, [location.pathname, dispatch]);
 
   useEffect(() => {
     // Smooth scroll to top on route change
@@ -65,34 +74,34 @@ import AuthInitializer from "./components/AuthInitializer";
       <Route path="/register" element={<PageTransition><Register /></PageTransition>} />
 
       {/* User Pages - Now accessible without login */}
-      <Route path="/cart" element={<PageTransition><ProductViewRoute><Cart /></ProductViewRoute></PageTransition>} />
-      <Route path="/checkout" element={<PageTransition><ProductViewRoute><Checkout /></ProductViewRoute></PageTransition>} />
-      <Route path="/profile" element={<PageTransition><ProductViewRoute><Profile /></ProductViewRoute></PageTransition>} />
-      <Route path="/orders" element={<PageTransition><ProductViewRoute><Orders /></ProductViewRoute></PageTransition>} />
+      <Route path="/cart" element={<PageTransition><Cart /></PageTransition>} />
+      <Route path="/checkout" element={<PageTransition><Checkout /></PageTransition>} />
+      <Route path="/profile" element={<PageTransition><Profile /></PageTransition>} />
+      <Route path="/orders" element={<PageTransition><Orders /></PageTransition>} />
 
 
       {/* Product View Pages - allow view after popup dismissed */}
-      <Route path="/deals" element={<PageTransition><ProductViewRoute><Deals /></ProductViewRoute></PageTransition>} />
-      <Route path="/eyeglasses" element={<PageTransition><ProductViewRoute><Eyeglasses /></ProductViewRoute></PageTransition>} />
-      <Route path="/computer-glasses" element={<PageTransition><ProductViewRoute><ComputerGlasses /></ProductViewRoute></PageTransition>} />
-      <Route path="/kids-glasses" element={<PageTransition><ProductViewRoute><KidsGlasses /></ProductViewRoute></PageTransition>} />
-      <Route path="/half-rim-frames" element={<PageTransition><ProductViewRoute><HalfRimFrames /></ProductViewRoute></PageTransition>} />
-      <Route path="/rimless-frames" element={<PageTransition><ProductViewRoute><RimlessFrames /></ProductViewRoute></PageTransition>} />
-      <Route path="/sunglasses" element={<PageTransition><ProductViewRoute><Sunglasses /></ProductViewRoute></PageTransition>} />
-      <Route path="/contact-lenses" element={<PageTransition><ProductViewRoute><ContactLenses /></ProductViewRoute></PageTransition>} />
+      <Route path="/deals" element={<PageTransition><Deals /></PageTransition>} />
+      <Route path="/eyeglasses" element={<PageTransition><Eyeglasses /></PageTransition>} />
+      <Route path="/computer-glasses" element={<PageTransition><ComputerGlasses /></PageTransition>} />
+      <Route path="/kids-glasses" element={<PageTransition><KidsGlasses /></PageTransition>} />
+      <Route path="/half-rim-frames" element={<PageTransition><HalfRimFrames /></PageTransition>} />
+      <Route path="/rimless-frames" element={<PageTransition><RimlessFrames /></PageTransition>} />
+      <Route path="/sunglasses" element={<PageTransition><Sunglasses /></PageTransition>} />
+      <Route path="/contact-lenses" element={<PageTransition><ContactLenses /></PageTransition>} />
 
       {/* Wear Categories - also product view */}
-      <Route path="/male-wear" element={<PageTransition><ProductViewRoute><MenWear /></ProductViewRoute></PageTransition>} />
-      <Route path="/female-wear" element={<PageTransition><ProductViewRoute><FemaleWear /></ProductViewRoute></PageTransition>} />
-      <Route path="/child-wear" element={<PageTransition><ProductViewRoute><ChildWear /></ProductViewRoute></PageTransition>} />
+      <Route path="/male-wear" element={<PageTransition><MenWear /></PageTransition>} />
+      <Route path="/female-wear" element={<PageTransition><FemaleWear /></PageTransition>} />
+      <Route path="/child-wear" element={<PageTransition><ChildWear /></PageTransition>} />
 
       {/* Admin - Now accessible without login */}
-      <Route path="/admin/edit-home" element={<PageTransition><ProductViewRoute><EditHome /></ProductViewRoute></PageTransition>} />
-      <Route path="/admin/edit-links" element={<PageTransition><ProductViewRoute><EditLinks /></ProductViewRoute></PageTransition>} />
-      <Route path="/admin/dashboard" element={<PageTransition><ProductViewRoute><AdminDashboard /></ProductViewRoute></PageTransition>} />
-      <Route path="/admin/products" element={<PageTransition><ProductViewRoute><AdminProducts /></ProductViewRoute></PageTransition>} />
-      <Route path="/admin/orders" element={<PageTransition><ProductViewRoute><AdminOrders /></ProductViewRoute></PageTransition>} />
-      <Route path="/admin/users" element={<PageTransition><ProductViewRoute><AdminUsers /></ProductViewRoute></PageTransition>} />
+      <Route path="/admin/edit-home" element={<PageTransition><EditHome /></PageTransition>} />
+      <Route path="/admin/edit-links" element={<PageTransition><EditLinks /></PageTransition>} />
+      <Route path="/admin/dashboard" element={<PageTransition><AdminDashboard /></PageTransition>} />
+      <Route path="/admin/products" element={<PageTransition><AdminProducts /></PageTransition>} />
+      <Route path="/admin/orders" element={<PageTransition><AdminOrders /></PageTransition>} />
+      <Route path="/admin/users" element={<PageTransition><AdminUsers /></PageTransition>} />
 
       {/* 404 - Not Found */}
       <Route path="*" element={<Navigate to="/home" replace />} />

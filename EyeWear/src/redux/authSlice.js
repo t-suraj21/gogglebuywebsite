@@ -100,7 +100,7 @@ const authSlice = createSlice({
     error: null,
     success: false,
     isAuthenticated: !!localStorage.getItem("token"),
-    showLoginPopup: false,
+    showLoginPopup: true,
     loginPopupDismissed: false
   },
   reducers: {
@@ -138,6 +138,7 @@ const authSlice = createSlice({
       state.loginPopupDismissed = true;
     },
     resetLoginPopup: (state) => {
+      state.showLoginPopup = true;
       state.loginPopupDismissed = false;
     }
   },

@@ -4,7 +4,6 @@ import { FaHeart } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { addToCart } from "../redux/cartSlice";
-import AuthModal from "../components/AuthModal";
 import MobileAddToCartButton from "../components/MobileAddToCartButton";
 import { Link } from "react-router-dom";
 
@@ -13,7 +12,6 @@ export default function Eyeglasses() {
   const [sortBy, setSortBy] = useState("popular");
   const [viewMode, setViewMode] = useState("grid");
   const [priceRange, setPriceRange] = useState([0, 10000]);
-  const [showAuthModal, setShowAuthModal] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const user = useSelector((state) => state.auth.user);
@@ -228,12 +226,6 @@ export default function Eyeglasses() {
   });
 
   const handleAddToCart = (product) => {
-    // Check if user is logged in
-    if (!user) {
-      setShowAuthModal(true);
-      return;
-    }
-
     dispatch(addToCart({
       _id: product.id,
       name: product.name,
@@ -384,7 +376,7 @@ export default function Eyeglasses() {
           <div className={`grid gap-8 ${gridColsClass}`}>
             {sortedProducts.map((product) => (
               <div key={product.id} className={`bg-white rounded-xl shadow-md hover:shadow-2xl transition-all duration-300 overflow-hidden group ${viewMode === "list" ? "flex" : ""}`}>
-                <div className={`relative overflow-hidden ${viewMode === "list" ? "w-80 flex-shrink-0" : ""}`}>
+                <div className={`relative overflow-hidden ${viewMode === "list" ? "w-80 shrink-0" : ""}`}>
                   <img
                     src={product.image}
                     alt={product.name}
@@ -528,13 +520,7 @@ export default function Eyeglasses() {
       </section>
 
       {/* Auth Modal */}
-      <AuthModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        onLoginSuccess={() => {
-          setShowAuthModal(false);
-        }}
-      />
+      
     </div>
   );
 }

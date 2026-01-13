@@ -3,7 +3,6 @@ import { Heart, ShoppingCart, Star, Sun, Shield, Eye, Award, Truck, RefreshCw, S
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { addToCart } from "../redux/cartSlice";
-import AuthModal from "../components/AuthModal";
 import MobileAddToCartButton from "../components/MobileAddToCartButton";
 
 export default function Sunglasses() {
@@ -12,7 +11,6 @@ export default function Sunglasses() {
   const [sortBy, setSortBy] = useState("popular");
   const [wishlist, setWishlist] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [showAuthModal, setShowAuthModal] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const user = useSelector((state) => state.auth.user);
@@ -207,12 +205,6 @@ export default function Sunglasses() {
   };
 
   const handleAddToCart = (product) => {
-    // Check if user is logged in
-    if (!user) {
-      setShowAuthModal(true);
-      return;
-    }
-
     dispatch(addToCart({
       _id: product.id,
       name: product.name,
@@ -585,14 +577,6 @@ export default function Sunglasses() {
         </div>
       </section>
 
-      {/* Auth Modal */}
-      <AuthModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        onLoginSuccess={() => {
-          setShowAuthModal(false);
-        }}
-      />
     </div>
   );
 }

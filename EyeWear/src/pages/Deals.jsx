@@ -4,13 +4,11 @@ import { FaHeart } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { addToCart } from "../redux/cartSlice";
-import AuthModal from "../components/AuthModal";
 import MobileAddToCartButton from "../components/MobileAddToCartButton";
 import { Link } from "react-router-dom";
 
 export default function Deals() {
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const [showAuthModal, setShowAuthModal] = useState(false);
   const [timeLeft, setTimeLeft] = useState({});
   const [currentSlide, setCurrentSlide] = useState(0);
   const dispatch = useDispatch();
@@ -220,12 +218,6 @@ export default function Deals() {
     : deals.filter(product => product.category === selectedCategory);
 
   const handleAddToCart = (product) => {
-    // Check if user is logged in
-    if (!user) {
-      setShowAuthModal(true);
-      return;
-    }
-
     dispatch(addToCart({
       _id: product.id,
       name: product.name,
@@ -457,13 +449,7 @@ export default function Deals() {
       </section>
 
       {/* Auth Modal */}
-      <AuthModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        onLoginSuccess={() => {
-          setShowAuthModal(false);
-        }}
-      />
+      
     </div>
   );
 }

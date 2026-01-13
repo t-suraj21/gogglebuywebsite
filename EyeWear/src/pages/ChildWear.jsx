@@ -153,7 +153,7 @@ export default function ChildWear() {
               <Link to="/home" className="block px-3 py-2 text-gray-700 hover:bg-blue-50 rounded">Home</Link>
               <Link to="/male-wear" className="block px-3 py-2 text-gray-700 hover:bg-blue-50 rounded">Men Wear</Link>
               <Link to="/female-wear" className="block px-3 py-2 text-gray-700 hover:bg-blue-50 rounded">Female Wear</Link>
-              <Link to="/child-wear" className="block px-3 py-2 text-gray-700 hover:bg-blue-50 rounded font-semibold text-blue-600">Child Wear</Link>
+              <Link to="/child-wear" className="block px-3 py-2 text-blue-600 hover:bg-blue-50 rounded font-semibold">Child Wear</Link>
             </div>
           )}
         </div>

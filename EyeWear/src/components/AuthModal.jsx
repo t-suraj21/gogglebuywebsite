@@ -24,18 +24,25 @@ export default function AuthModal() {
 
     try {
       if (isLogin) {
-        // Handle login
-        await dispatch(loginUser({ email, password })).unwrap();
-        dispatch(hideLoginPopup());
+        const result = await dispatch(loginUser({ email, password })).unwrap();
+        if (result) {
+          setEmail("");
+          setPassword("");
+          dispatch(hideLoginPopup());
+          navigate("/home");
+        }
       } else {
-        // Handle registration
-        await dispatch(registerUser({ name, email, password })).unwrap();
-        setIsLogin(true);
-        setName("");
-        setError("");
+        const result = await dispatch(registerUser({ name, email, password })).unwrap();
+        if (result) {
+          setEmail("");
+          setPassword("");
+          setName("");
+          dispatch(hideLoginPopup());
+          navigate("/home");
+        }
       }
     } catch (err) {
-      setError(err.message || "An error occurred");
+      setError(err || "An error occurred");
     } finally {
       setLoading(false);
     }
@@ -44,133 +51,115 @@ export default function AuthModal() {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed top-0 right-0 z-50 p-4 pointer-events-none">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto animate-in fade-in slide-in-from-right duration-300 pointer-events-auto">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      {/* Modal Container */}
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md relative animate-in fade-in zoom-in-95 duration-300">
+        {/* Close Button */}
+        <button
+          onClick={() => dispatch(hideLoginPopup())}
+          className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full transition-colors z-10"
+          aria-label="Close"
+        >
+          <FiX size={24} className="text-gray-600" />
+        </button>
+
         {/* Header */}
-        <div className="sticky top-0 bg-linear-to-r from-blue-600 to-blue-700 px-6 py-4 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-white">
-            {isLogin ? "Welcome Back" : "Create Account"}
+        <div className="px-6 pt-8 pb-4">
+          <h2 className="text-3xl font-bold text-gray-900">
+            {isLogin ? "Welcome Back" : "Join Us"}
           </h2>
-          <button
-            onClick={() => dispatch(hideLoginPopup())}
-            className="text-white hover:bg-white/20 p-2 rounded-full transition"
-          >
-            <FiX size={24} />
-          </button>
+          <p className="text-gray-500 text-sm mt-2">
+            {isLogin ? "Sign in to your account" : "Create your account"}
+          </p>
         </div>
 
         {/* Form */}
-        <div className="p-6">
+        <form onSubmit={handleSubmit} className="px-6 pb-6 space-y-4">
+          {/* Error Message */}
           {error && (
-            <div className="mb-4 p-3 bg-red-100 border border-red-400 rounded-lg text-red-700 text-sm">
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
               {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Name field (Register only) */}
-            {!isLogin && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Full Name
-                </label>
-                <div className="relative">
-                  <FiUser className="absolute left-3 top-3 text-gray-400" />
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Enter your full name"
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required={!isLogin}
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* Email field */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email Address
-              </label>
+          {/* Name Field (Register Only) */}
+          {!isLogin && (
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">Name</label>
               <div className="relative">
-                <FiMail className="absolute left-3 top-3 text-gray-400" />
+                <FiUser className="absolute left-3 top-3 text-gray-400" size={20} />
                 <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email"
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Your name"
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required={!isLogin}
                 />
               </div>
             </div>
+          )}
 
-            {/* Password field */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Password
-              </label>
-              <div className="relative">
-                <FiLock className="absolute left-3 top-3 text-gray-400" />
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder={isLogin ? "Enter your password" : "Create a password (min 6 chars)"}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  minLength={6}
-                  required
-                />
-              </div>
-              {!isLogin && (
-                <p className="text-xs text-gray-500 mt-1">Minimum 6 characters</p>
-              )}
+          {/* Email Field */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">Email</label>
+            <div className="relative">
+              <FiMail className="absolute left-3 top-3 text-gray-400" size={20} />
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="your@email.com"
+                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+              />
             </div>
+          </div>
 
-            {/* Submit button */}
+          {/* Password Field */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">Password</label>
+            <div className="relative">
+              <FiLock className="absolute left-3 top-3 text-gray-400" size={20} />
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+              />
+            </div>
+          </div>
+
+          {/* Submit Button */}
+          <button
+            type="submit"
+            disabled={loading || authLoading}
+            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold py-2.5 rounded-lg transition-colors duration-200 mt-6"
+          >
+            {loading || authLoading ? "Processing..." : isLogin ? "Sign In" : "Create Account"}
+          </button>
+        </form>
+
+        {/* Toggle Login/Register */}
+        <div className="px-6 pb-6 border-t border-gray-200 pt-4 text-center">
+          <p className="text-gray-600 text-sm">
+            {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
             <button
-              type="submit"
-              disabled={loading || authLoading}
-              className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold rounded-lg transition duration-200 mt-6"
+              type="button"
+              onClick={() => {
+                setIsLogin(!isLogin);
+                setError("");
+                setEmail("");
+                setPassword("");
+                setName("");
+              }}
+              className="text-blue-600 hover:text-blue-700 font-semibold"
             >
-              {loading || authLoading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  {isLogin ? "Signing in..." : "Creating account..."}
-                </span>
-              ) : (
-                isLogin ? "Sign In" : "Register"
-              )}
+              {isLogin ? "Register" : "Sign In"}
             </button>
-          </form>
-
-          {/* Toggle between login and register */}
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
-              {isLogin ? "Don't have an account?" : "Already have an account?"}
-              <button
-                type="button"
-                onClick={() => {
-                  setIsLogin(!isLogin);
-                  setError("");
-                  setName("");
-                  setEmail("");
-                  setPassword("");
-                }}
-                className="ml-2 text-blue-600 hover:text-blue-700 font-semibold"
-              >
-                {isLogin ? "Register" : "Sign In"}
-              </button>
-            </p>
-          </div>
-
-          {/* Quick login info */}
-          <div className="mt-6 p-3 bg-blue-50 rounded-lg text-xs text-gray-600">
-            <p className="font-semibold text-gray-700 mb-2">Demo Credentials:</p>
-            <p><strong>Email:</strong> john@example.com</p>
-            <p><strong>Password:</strong> password123</p>
-          </div>
+          </p>
         </div>
       </div>
     </div>

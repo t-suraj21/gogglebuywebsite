@@ -3,7 +3,6 @@ import { Eye, Droplet, Shield, Clock, Star, ShoppingCart, Heart, Award, Truck, R
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { addToCart } from "../redux/cartSlice";
-import AuthModal from "../components/AuthModal";
 import MobileAddToCartButton from "../components/MobileAddToCartButton";
 
 export default function ContactLenses() {
@@ -11,7 +10,6 @@ export default function ContactLenses() {
   const [sortBy, setSortBy] = useState("popular");
   const [wishlist, setWishlist] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [showAuthModal, setShowAuthModal] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const user = useSelector((state) => state.auth.user);
@@ -203,12 +201,6 @@ export default function ContactLenses() {
   });
 
   const handleAddToCart = (product) => {
-    // Check if user is logged in
-    if (!user) {
-      setShowAuthModal(true);
-      return;
-    }
-
     dispatch(addToCart({
       _id: product.id,
       name: product.name,

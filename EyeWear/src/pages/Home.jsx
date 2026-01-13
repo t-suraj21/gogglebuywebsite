@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import AdminMenuWrapper from "../components/AdminMenuWrapper";
 import ProductCard from "../components/ProductCard";
-import AuthModal from "../components/AuthModal";
 import MobileAddToCartButton from "../components/MobileAddToCartButton";
 import { gogglesProducts } from "../data/products";
 import { logout } from "../redux/authSlice";
@@ -22,8 +21,6 @@ export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [email, setEmail] = useState("");
   const [filteredProducts, setFilteredProducts] = useState([]);
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [pendingNavigation, setPendingNavigation] = useState(null);
   const [showSearchResults, setShowSearchResults] = useState(false);
   const cartItems = useSelector((state) => state.cart.items || []);
   const cartCount = cartItems.length;
@@ -141,20 +138,7 @@ export default function Home() {
   };
 
   const handleShopClick = (path) => {
-    if (!user) {
-      setPendingNavigation(path);
-      setShowAuthModal(true);
-    } else {
-      navigate(path);
-    }
-  };
-
-  const handleAuthSuccess = () => {
-    setShowAuthModal(false);
-    if (pendingNavigation) {
-      navigate(pendingNavigation);
-      setPendingNavigation(null);
-    }
+    navigate(path);
   };
 
   return (
@@ -513,7 +497,7 @@ export default function Home() {
                 />
                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition"></div>
                 <div className="absolute bottom-6 left-0 right-0 text-center">
-                  <h3 className="text-black text-2xl font-bold text-gray-900 inline-block px-8 py-2 bg-white/90 rounded-lg group-hover:bg-white transition">
+                  <h3 className="text-gray-900 text-2xl font-bold inline-block px-8 py-2 bg-white/90 rounded-lg group-hover:bg-white transition">
                     {cat.name}
                   </h3>
                 </div>
@@ -722,15 +706,6 @@ export default function Home() {
       </footer>
 
       {/* Auth Modal for Navigation */}
-      <AuthModal
-        isOpen={showAuthModal}
-        onClose={() => {
-          setShowAuthModal(false);
-          setPendingNavigation(null);
-        }}
-        onLoginSuccess={handleAuthSuccess}
-      />
-
       {/* Mobile Add to Cart Button */}
       <MobileAddToCartButton />
     </div>

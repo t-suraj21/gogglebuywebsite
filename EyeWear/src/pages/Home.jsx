@@ -142,15 +142,17 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-white w-full">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white w-full">
       {/* Navbar */}
-      <nav className="sticky top-0 z-50 bg-white shadow-md w-full">
+      <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md shadow-lg w-full">
         <div className="w-full px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center justify-between">
             {/* Logo */}
-            <Link to="/home" className="flex items-center gap-2 text-2xl font-bold text-gray-900">
-              <FiHome size={28} className="text-blue-600" />
-              <span className="text-blue-600">BUYCHASHME</span>
+            <Link to="/home" className="flex items-center gap-2 text-2xl font-bold text-gray-900 hover:scale-105 transition-transform duration-300">
+              <div className="bg-gradient-to-br from-blue-500 to-blue-700 p-2 rounded-lg shadow-lg">
+                <FiHome size={24} className="text-white" />
+              </div>
+              <span className="bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">BUYCHASHME</span>
             </Link>
 
             {/* Desktop Menu */}
@@ -169,7 +171,7 @@ export default function Home() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onFocus={() => setShowSearchResults(true)}
-                  className="w-full px-4 py-2 bg-gray-100 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                  className="w-full px-4 py-2 bg-gradient-to-r from-gray-50 to-gray-100 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:shadow-lg transition-all duration-300"
                 />
                 <button type="submit" className="absolute right-3 top-2.5 text-gray-500 hover:text-blue-600 transition">
                   <FiSearch size={18} />
@@ -207,11 +209,11 @@ export default function Home() {
               <div className="flex items-center gap-4">
                 <button 
                   onClick={() => handleShopClick('/cart')}
-                  className="relative text-gray-700 hover:text-blue-600 transition cursor-pointer bg-none border-none p-0"
+                  className="relative text-gray-700 hover:text-blue-600 hover:scale-110 transition-all duration-300 cursor-pointer bg-none border-none p-2 hover:bg-blue-50 rounded-full"
                 >
                   <FiShoppingCart size={24} />
                   {cartCount > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                    <span className="absolute -top-1 -right-1 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-lg animate-pulse">
                       {cartCount}
                     </span>
                   )}
@@ -221,10 +223,12 @@ export default function Home() {
                   <div className="relative">
                     <button
                       onClick={() => setIsProfileDropdown(!isProfileDropdown)}
-                      className="flex items-center gap-2 px-3 py-2 bg-blue-50 rounded-full hover:bg-blue-100 transition"
+                      className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-50 to-blue-100 rounded-full hover:from-blue-100 hover:to-blue-200 transition-all duration-300 shadow-md hover:shadow-lg"
                     >
-                      <FiUser size={20} className="text-blue-600" />
-                      <span className="text-sm font-medium text-gray-700">{user.name?.split(" ")[0]}</span>
+                      <div className="bg-gradient-to-br from-blue-500 to-blue-700 p-1.5 rounded-full">
+                        <FiUser size={16} className="text-white" />
+                      </div>
+                      <span className="text-sm font-semibold text-gray-700">{user.name?.split(" ")[0]}</span>
                     </button>
                     {isProfileDropdown && (
                       <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
@@ -248,7 +252,7 @@ export default function Home() {
                     )}
                   </div>
                 ) : (
-                  <button onClick={() => navigate("/login")} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">
+                  <button onClick={() => navigate("/login")} className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-full hover:from-blue-700 hover:to-blue-800 transition-all duration-300 font-semibold shadow-lg hover:shadow-xl hover:scale-105">
                     Login
                   </button>
                 )}
@@ -393,33 +397,35 @@ export default function Home() {
 
 
       {/* Hero Slider */}
-      <section className="relative h-[500px] overflow-hidden">
+      <section className="relative h-[600px] overflow-hidden">
         {heroSlides.map((slide, idx) => (
           <div
             key={idx}
-            className={`absolute inset-0 transition-opacity duration-1000 ${
-              idx === currentSlide ? "opacity-100" : "opacity-0"
+            className={`absolute inset-0 transition-all duration-1000 ${
+              idx === currentSlide ? "opacity-100 scale-100" : "opacity-0 scale-105"
             }`}
           >
-            <div className={`absolute inset-0 bg-gradient-to-r ${slide.bg}`}>
+            <div className={`absolute inset-0 bg-gradient-to-r ${slide.bg} before:absolute before:inset-0 before:bg-black/10`}>
               <div className="max-w-7xl mx-auto px-4 h-full flex items-center">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center w-full">
-                  <div className="text-white space-y-6">
-                    <p className="text-lg font-medium">{slide.title}</p>
-                    <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold leading-tight">
+                  <div className="text-white space-y-8 animate-fadeIn">
+                    <p className="text-lg font-semibold tracking-wider uppercase opacity-90">{slide.title}</p>
+                    <h1 className="text-5xl sm:text-6xl md:text-7xl font-black leading-tight drop-shadow-2xl">
                       {slide.discount}
                       <br />
-                      <span className="text-white">{slide.subtitle}</span>
+                      <span className="text-white/95 text-4xl sm:text-5xl">{slide.subtitle}</span>
                     </h1>
-                    <button onClick={() => handleShopClick("/sunglasses")} className="px-8 py-3 bg-red-600 text-white font-bold rounded hover:bg-red-700 transition">
+                    <button onClick={() => handleShopClick("/sunglasses")} className="group px-10 py-4 bg-gradient-to-r from-red-600 to-pink-600 text-white font-bold rounded-full hover:from-red-700 hover:to-pink-700 transition-all duration-300 shadow-2xl hover:shadow-red-500/50 hover:scale-105 flex items-center gap-2 w-fit">
                       SHOP NOW
+                      <FiArrowRight className="group-hover:translate-x-1 transition-transform" />
                     </button>
                   </div>
-                  <div className="hidden lg:block">
+                  <div className="hidden lg:block relative">
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-2xl blur-3xl"></div>
                     <img
                       src={slide.image}
                       alt="Sunglasses"
-                      className="w-full h-96 object-cover rounded-lg shadow-2xl"
+                      className="relative w-full h-[450px] object-cover rounded-2xl shadow-2xl hover:scale-105 transition-transform duration-500 ring-4 ring-white/20"
                       onError={(e) => {
                         e.target.src = "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=800&q=80";
                       }}
@@ -434,25 +440,25 @@ export default function Home() {
         {/* Slider Controls */}
         <button
           onClick={prevSlide}
-          className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/40 text-white p-3 rounded-full backdrop-blur-sm transition"
+          className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/30 text-white p-4 rounded-full backdrop-blur-md transition-all duration-300 shadow-xl hover:scale-110 border border-white/20"
         >
-          <FiChevronLeft size={24} />
+          <FiChevronLeft size={28} />
         </button>
         <button
           onClick={nextSlide}
-          className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/40 text-white p-3 rounded-full backdrop-blur-sm transition"
+          className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/30 text-white p-4 rounded-full backdrop-blur-md transition-all duration-300 shadow-xl hover:scale-110 border border-white/20"
         >
-          <FiChevronRight size={24} />
+          <FiChevronRight size={28} />
         </button>
 
         {/* Dots */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2">
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-3 bg-black/20 backdrop-blur-md px-4 py-2 rounded-full">
           {heroSlides.map((_, idx) => (
             <button
               key={idx}
               onClick={() => setCurrentSlide(idx)}
-              className={`w-3 h-3 rounded-full transition ${
-                idx === currentSlide ? "bg-white" : "bg-white/50"
+              className={`rounded-full transition-all duration-300 ${
+                idx === currentSlide ? "bg-white w-8 h-3" : "bg-white/50 w-3 h-3 hover:bg-white/70"
               }`}
             />
           ))}
@@ -460,11 +466,12 @@ export default function Home() {
       </section>
 
       {/* Featured Products Carousel */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-20 bg-gradient-to-b from-white to-gray-50">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-gray-900 mb-2">FEATURED PRODUCTS</h2>
-            <p className="text-gray-600">Discover our premium selection of eyewear</p>
+          <div className="text-center mb-16">
+            <span className="inline-block px-4 py-1.5 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold mb-4">✨ Featured Collection</span>
+            <h2 className="text-5xl font-black text-gray-900 mb-4 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">FEATURED PRODUCTS</h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">Discover our premium selection of eyewear crafted with precision and style</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {featuredProducts.map((product) => (
@@ -475,29 +482,33 @@ export default function Home() {
       </section>
 
       {/* Discover Categories */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-blue-900 mb-2">DISCOVER OUR SELECTION</h2>
+      <section className="py-20 bg-white relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-blue-50/30 to-purple-50/30 pointer-events-none"></div>
+        <div className="max-w-7xl mx-auto px-4 relative z-10">
+          <div className="text-center mb-16">
+            <span className="inline-block px-4 py-1.5 bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700 rounded-full text-sm font-semibold mb-4">🎯 Shop by Category</span>
+            <h2 className="text-5xl font-black bg-gradient-to-r from-blue-900 to-purple-900 bg-clip-text text-transparent mb-4">DISCOVER OUR SELECTION</h2>
+            <p className="text-lg text-gray-600">Find the perfect style for everyone</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {categories.map((cat, idx) => (
               <button
                 key={idx}
                 onClick={() => handleShopClick(cat.path)}
-                className="relative group cursor-pointer overflow-hidden rounded-lg text-left transition-transform hover:scale-105"
+                className="relative group cursor-pointer overflow-hidden rounded-2xl text-left transition-all duration-500 hover:scale-105 hover:shadow-2xl"
               >
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-purple-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10"></div>
                 <img
                   src={cat.image}
                   alt={cat.name}
-                  className="w-full h-80 object-cover group-hover:scale-110 transition duration-500"
+                  className="w-full h-80 object-cover group-hover:scale-110 transition duration-700"
                   onError={(e) => {
                     e.target.src = "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=600&q=80";
                   }}
                 />
-                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition"></div>
-                <div className="absolute bottom-6 left-0 right-0 text-center">
-                  <h3 className="text-gray-900 text-2xl font-bold inline-block px-8 py-2 bg-white/90 rounded-lg group-hover:bg-white transition">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent group-hover:from-black/70 transition-all duration-500"></div>
+                <div className="absolute bottom-8 left-0 right-0 text-center z-20">
+                  <h3 className="text-white text-3xl font-black inline-block px-10 py-3 bg-gradient-to-r from-white/20 to-white/10 backdrop-blur-md rounded-full group-hover:from-white/30 group-hover:to-white/20 transition-all duration-500 shadow-lg border border-white/20 group-hover:scale-110">
                     {cat.name}
                   </h3>
                 </div>
@@ -508,17 +519,18 @@ export default function Home() {
       </section>
 
       {/* Latest Collection */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-20 bg-gradient-to-br from-gray-50 to-blue-50">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            <div className="lg:col-span-1 space-y-6">
-              <p className="text-sm text-gray-600 font-semibold">LATEST</p>
-              <h2 className="text-3xl font-bold text-gray-900">PREMIUM COLLECTION</h2>
-              <p className="text-gray-600">
+            <div className="lg:col-span-1 space-y-8 flex flex-col justify-center">
+              <span className="inline-block px-4 py-1.5 bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-700 rounded-full text-sm font-semibold w-fit">🆕 Latest</span>
+              <h2 className="text-4xl font-black bg-gradient-to-r from-gray-900 to-blue-900 bg-clip-text text-transparent">PREMIUM COLLECTION</h2>
+              <p className="text-gray-600 leading-relaxed">
                 Explore our carefully curated selection of premium eyewear with the latest designs and technologies.
               </p>
-              <button onClick={() => navigate("/products")} className="px-6 py-3 bg-blue-600 text-white font-bold rounded hover:bg-blue-700 transition">
+              <button onClick={() => navigate("/products")} className="group px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-full hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105 flex items-center gap-2 w-fit">
                 VIEW ALL
+                <FiArrowRight className="group-hover:translate-x-1 transition-transform" />
               </button>
             </div>
 
@@ -532,11 +544,13 @@ export default function Home() {
       </section>
 
       {/* Most Popular Sunglasses */}
-      <section id="products" className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-gray-900 mb-2">MOST POPULAR EYEWEAR</h2>
-            <p className="text-gray-600">Handpicked favorites from our collection</p>
+      <section id="products" className="py-20 bg-white relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-50/30 to-transparent pointer-events-none"></div>
+        <div className="max-w-7xl mx-auto px-4 relative z-10">
+          <div className="text-center mb-16">
+            <span className="inline-block px-4 py-1.5 bg-gradient-to-r from-amber-100 to-orange-100 text-amber-700 rounded-full text-sm font-semibold mb-4">🔥 Trending Now</span>
+            <h2 className="text-5xl font-black bg-gradient-to-r from-gray-900 to-orange-900 bg-clip-text text-transparent mb-4">MOST POPULAR EYEWEAR</h2>
+            <p className="text-lg text-gray-600">Handpicked favorites from our collection</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {popularProducts.map((product) => (
@@ -549,41 +563,44 @@ export default function Home() {
 
       {/* Testimonial Section */}
       {/* Featured Brand Collection */}
-      <section className="relative bg-gradient-to-br from-yellow-400 via-yellow-300 to-amber-400 py-20 overflow-hidden">
+      <section className="relative bg-gradient-to-br from-yellow-400 via-amber-300 to-orange-400 py-24 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             {/* Left Content */}
-            <div className="space-y-6 z-10 relative">
-              <p className="text-gray-800 text-sm font-semibold tracking-wider uppercase">New Collection 2025</p>
-              <h2 className="text-5xl md:text-6xl font-black text-white leading-tight drop-shadow-lg">
+            <div className="space-y-8 z-10 relative animate-fadeIn">
+              <span className="inline-block px-4 py-2 bg-white/30 backdrop-blur-md text-gray-900 rounded-full text-sm font-bold tracking-wider uppercase shadow-lg">New Collection 2025</span>
+              <h2 className="text-6xl md:text-7xl font-black text-white leading-tight drop-shadow-2xl">
                 BRANDS
                 <br />
-                YOU LOVE
+                <span className="text-gray-900">YOU LOVE</span>
               </h2>
-              <p className="text-gray-800 text-lg max-w-lg leading-relaxed">
+              <p className="text-gray-900 text-lg max-w-lg leading-relaxed font-medium">
                 Discover stylish eyewear collections from the world's most desirable brands. Stand out and stay protected with our authentic designer shades.
               </p>
-              <button className="px-8 py-4 bg-white text-gray-900 font-bold text-sm tracking-wide rounded-md hover:bg-gray-100 transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+              <button className="group px-10 py-4 bg-white text-gray-900 font-bold text-sm tracking-wide rounded-full hover:bg-gray-900 hover:text-white transition-all duration-300 shadow-2xl hover:shadow-white/20 transform hover:scale-105 flex items-center gap-2 w-fit">
                 SHOP NOW
+                <FiArrowRight className="group-hover:translate-x-1 transition-transform" />
               </button>
             </div>
 
             {/* Right Image */}
-            <div className="relative">
+            <div className="relative group">
               <div className="relative z-10">
+                {/* Glow effect */}
+                <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-orange-300/40 rounded-3xl blur-2xl group-hover:blur-3xl transition-all duration-500"></div>
                 <img
                   src="https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=800&q=80"
                   alt="Fashion Model with Sunglasses"
-                  className="w-full h-[500px] object-cover rounded-2xl shadow-2xl"
+                  className="relative w-full h-[520px] object-cover rounded-3xl shadow-2xl group-hover:shadow-white/30 transition-all duration-500 ring-4 ring-white/30 group-hover:scale-105"
                 />
                 {/* Decorative Elements */}
-                <div className="absolute -top-6 -right-6 w-24 h-24 bg-white rounded-full opacity-20"></div>
-                <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-white rounded-full opacity-20"></div>
+                <div className="absolute -top-6 -right-6 w-28 h-28 bg-white rounded-full opacity-20 group-hover:scale-125 transition-transform duration-500"></div>
+                <div className="absolute -bottom-6 -left-6 w-36 h-36 bg-white rounded-full opacity-20 group-hover:scale-125 transition-transform duration-500"></div>
               </div>
               
-              {/* Navigation Arrows */}
-              <button className="absolute top-1/2 -translate-y-1/2 -right-4 bg-white text-gray-900 p-3 rounded-full shadow-lg hover:shadow-xl transition hover:scale-110">
-                <FiChevronRight size={24} />
+              {/* Navigation Arrow */}
+              <button className="absolute top-1/2 -translate-y-1/2 -right-6 bg-white text-gray-900 p-4 rounded-full shadow-2xl hover:shadow-white/40 transition-all duration-300 hover:scale-110 border-4 border-white/30">
+                <FiChevronRight size={28} />
               </button>
             </div>
           </div>
@@ -595,22 +612,27 @@ export default function Home() {
       </section>
       
       {/* Newsletter */}
-      <section id="contact" className="py-16 bg-gray-50">
-        <div className="max-w-4xl mx-auto px-4">
-          <div className="bg-white rounded-lg shadow-lg p-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Let's Stay Connected!</h2>
-            <form onSubmit={handleNewsletter} className="flex gap-4">
+      <section id="contact" className="py-20 bg-gradient-to-br from-blue-50 to-purple-50 relative overflow-hidden">
+        <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
+        <div className="max-w-4xl mx-auto px-4 relative z-10">
+          <div className="bg-gradient-to-br from-white to-blue-50/50 backdrop-blur-sm rounded-3xl shadow-2xl p-12 border border-white/20">
+            <div className="text-center mb-10">
+              <span className="inline-block px-4 py-1.5 bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700 rounded-full text-sm font-semibold mb-4">📧 Newsletter</span>
+              <h2 className="text-4xl font-black bg-gradient-to-r from-blue-900 to-purple-900 bg-clip-text text-transparent mb-3">Let's Stay Connected!</h2>
+              <p className="text-gray-600">Subscribe to get exclusive deals and latest updates</p>
+            </div>
+            <form onSubmit={handleNewsletter} className="flex flex-col sm:flex-row gap-4">
               <input
                 type="email"
-                placeholder="Enter email address"
+                placeholder="Enter your email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="flex-1 px-6 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex-1 px-6 py-4 border-2 border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 shadow-sm hover:shadow-md"
                 required
               />
               <button
                 type="submit"
-                className="px-8 py-3 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition"
+                className="px-10 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold rounded-full hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 whitespace-nowrap"
               >
                 SIGN UP
               </button>
@@ -620,38 +642,39 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section className="py-12 bg-white border-t">
-        <div className="max-w-7xl mx-auto px-4">
+      <section className="py-16 bg-white border-t relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-gray-50/50 to-white pointer-events-none"></div>
+        <div className="max-w-7xl mx-auto px-4 relative z-10">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
-                <FiTruck size={28} className="text-blue-600" />
+            <div className="text-center group">
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-100 to-blue-200 rounded-2xl mb-6 group-hover:scale-110 group-hover:shadow-xl transition-all duration-300 group-hover:rotate-3">
+                <FiTruck size={32} className="text-blue-600" />
               </div>
-              <h3 className="font-bold text-gray-900 mb-2">Free Shipping</h3>
+              <h3 className="font-bold text-gray-900 mb-2 text-lg">Free Shipping</h3>
               <p className="text-sm text-gray-600">On orders above ₹500</p>
             </div>
 
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
-                <FiShield size={28} className="text-blue-600" />
+            <div className="text-center group">
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-green-100 to-emerald-200 rounded-2xl mb-6 group-hover:scale-110 group-hover:shadow-xl transition-all duration-300 group-hover:rotate-3">
+                <FiShield size={32} className="text-green-600" />
               </div>
-              <h3 className="font-bold text-gray-900 mb-2">Secure Payment</h3>
+              <h3 className="font-bold text-gray-900 mb-2 text-lg">Secure Payment</h3>
               <p className="text-sm text-gray-600">100% protected checkout</p>
             </div>
 
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
-                <FiArrowRight size={28} className="text-blue-600" />
+            <div className="text-center group">
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-purple-100 to-purple-200 rounded-2xl mb-6 group-hover:scale-110 group-hover:shadow-xl transition-all duration-300 group-hover:rotate-3">
+                <FiArrowRight size={32} className="text-purple-600" />
               </div>
-              <h3 className="font-bold text-gray-900 mb-2">Easy Returns</h3>
+              <h3 className="font-bold text-gray-900 mb-2 text-lg">Easy Returns</h3>
               <p className="text-sm text-gray-600">7 days return policy</p>
             </div>
 
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
-                <FiStar size={28} className="text-blue-600" />
+            <div className="text-center group">
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-amber-100 to-orange-200 rounded-2xl mb-6 group-hover:scale-110 group-hover:shadow-xl transition-all duration-300 group-hover:rotate-3">
+                <FiStar size={32} className="text-amber-600" />
               </div>
-              <h3 className="font-bold text-gray-900 mb-2">Top Quality</h3>
+              <h3 className="font-bold text-gray-900 mb-2 text-lg">Top Quality</h3>
               <p className="text-sm text-gray-600">Premium lenses & frames</p>
             </div>
           </div>
